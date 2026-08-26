@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../data/portfolio_data.dart';
 import '../theme/app_theme.dart';
 import '../widgets/media.dart';
@@ -11,10 +10,11 @@ class FeatureDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pal = context.palette;
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
-    final accent = Color(
-      int.parse(feature.accentColor.replaceFirst('#', '0xFF')),
+    final accent = pal.liftAccent(
+      Color(int.parse(feature.accentColor.replaceFirst('#', '0xFF'))),
     );
 
     // Hero phone frame is sized by width so it tracks the viewport instead of
@@ -27,34 +27,25 @@ class FeatureDetailPage extends StatelessWidget {
         74 + heroPhoneWidth / kPhoneAspect + 12 + 18 + 14 + 62 + 26;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: pal.background,
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
             expandedHeight: heroHeight,
             pinned: true,
-            backgroundColor: accent.withValues(alpha: 0.1),
+            backgroundColor: pal.paperDeep,
             leading: Padding(
               padding: const EdgeInsets.all(8),
               child: GestureDetector(
                 onTap: () => Navigator.pop(context),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(50),
-                    border: Border.all(color: AppColors.strokeStrong),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.4),
-                        blurRadius: 12,
-                      ),
-                    ],
+                    color: pal.paperRaised,
+                    borderRadius: BorderRadius.circular(Radii.chip),
+                    border: Border.all(color: pal.ruleStrong),
+                    boxShadow: pal.restShadow,
                   ),
-                  child: const Icon(
-                    Icons.arrow_back,
-                    color: AppColors.ink,
-                    size: 20,
-                  ),
+                  child: Icon(Icons.arrow_back, color: pal.ink, size: 20),
                 ),
               ),
             ),
@@ -155,8 +146,8 @@ class _HeroBannerState extends State<_HeroBanner> {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                accent.withValues(alpha: 0.22),
-                accent.withValues(alpha: 0.06),
+                accent.withValues(alpha: 0.20),
+                accent.withValues(alpha: 0.04),
               ],
             ),
           ),
@@ -188,10 +179,10 @@ class _HeroBannerState extends State<_HeroBanner> {
                           begin: Alignment.centerLeft,
                           end: Alignment.centerRight,
                           colors: [
-                            Colors.transparent,
-                            Colors.white,
-                            Colors.white,
-                            Colors.transparent,
+                            Color(0x00FFFFFF),
+                            Color(0xFFFFFFFF),
+                            Color(0xFFFFFFFF),
+                            Color(0x00FFFFFF),
                           ],
                           stops: [0.0, 0.14, 0.86, 1.0],
                         ).createShader(rect),
@@ -248,21 +239,18 @@ class _HeroBannerState extends State<_HeroBanner> {
               Text(
                 feature.name,
                 textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
-                  fontSize: 30,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.ink,
-                  letterSpacing: -0.5,
-                ),
+                style: AppType.display(context, size: 38, height: 1.05),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 6),
               Text(
-                feature.context,
+                feature.context.toUpperCase(),
                 textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
+                style: AppType.mono(
+                  context,
+                  size: 10.5,
+                  weight: FontWeight.w600,
                   color: accent,
+                  letterSpacing: 1.6,
                 ),
               ),
             ],
@@ -320,6 +308,7 @@ class _Dots extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pal = context.palette;
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(count, (i) {
@@ -331,7 +320,7 @@ class _Dots extends StatelessWidget {
           width: on ? 22 : 7,
           height: 7,
           decoration: BoxDecoration(
-            color: on ? accent : accent.withValues(alpha: 0.3),
+            color: on ? pal.ink : pal.ruleStrong,
             borderRadius: BorderRadius.circular(4),
           ),
         );
@@ -402,6 +391,7 @@ class _AboutSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pal = context.palette;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -409,10 +399,11 @@ class _AboutSection extends StatelessWidget {
         const SizedBox(height: 12),
         Text(
           feature.description,
-          style: GoogleFonts.inter(
-            fontSize: 18,
-            color: AppColors.ink,
-            height: 1.7,
+          style: AppType.ui(
+            context,
+            size: 18,
+            color: pal.inkLight,
+            height: 1.75,
           ),
         ),
       ],
@@ -427,6 +418,7 @@ class _HighlightsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pal = context.palette;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -439,21 +431,19 @@ class _HighlightsSection extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  width: 8,
-                  height: 8,
-                  margin: const EdgeInsets.only(top: 6, right: 12),
-                  decoration: BoxDecoration(
-                    color: accent,
-                    shape: BoxShape.circle,
-                  ),
+                  width: 12,
+                  height: 1.5,
+                  margin: const EdgeInsets.only(top: 12, right: 12),
+                  color: accent,
                 ),
                 Expanded(
                   child: Text(
                     e.value,
-                    style: GoogleFonts.inter(
-                      fontSize: 16,
-                      color: AppColors.ink,
-                      height: 1.5,
+                    style: AppType.ui(
+                      context,
+                      size: 16,
+                      color: pal.ink,
+                      height: 1.6,
                     ),
                   ),
                 ),
@@ -473,6 +463,7 @@ class _TechSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pal = context.palette;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -489,16 +480,18 @@ class _TechSection extends StatelessWidget {
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(
-                    color: accent.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(50),
-                    border: Border.all(color: accent.withValues(alpha: 0.25)),
+                    color: accent.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(Radii.chip),
+                    border: Border.all(color: accent.withValues(alpha: 0.35)),
                   ),
                   child: Text(
-                    t,
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.ink,
+                    t.toUpperCase(),
+                    style: AppType.mono(
+                      context,
+                      size: 10,
+                      weight: FontWeight.w600,
+                      color: pal.ink,
+                      letterSpacing: 1.2,
                     ),
                   ),
                 ),
@@ -510,23 +503,14 @@ class _TechSection extends StatelessWidget {
   }
 }
 
-/// Small reusable label used above each detail section.
+/// Small reusable label used above each detail section — the same monospaced
+/// standfirst the rest of the site uses to open a block of content.
 class _SectionLabel extends StatelessWidget {
   final String text;
   const _SectionLabel(this.text);
 
   @override
-  Widget build(BuildContext context) {
-    return Text(
-      text,
-      style: GoogleFonts.inter(
-        fontSize: 13,
-        fontWeight: FontWeight.w600,
-        color: AppColors.inkLight,
-        letterSpacing: 1,
-      ),
-    );
-  }
+  Widget build(BuildContext context) => Eyebrow(label: text);
 }
 
 /// Full-screen swipeable screenshot viewer.
@@ -537,6 +521,7 @@ class _GalleryViewer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pal = context.palette;
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Stack(
@@ -550,7 +535,7 @@ class _GalleryViewer extends StatelessWidget {
                 child: InteractiveViewer(
                   child: MediaView(
                     image: shots[index],
-                    accent: AppColors.inkLight,
+                    accent: pal.inkLight,
                     fit: BoxFit.contain,
                   ),
                 ),
@@ -565,10 +550,14 @@ class _GalleryViewer extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(10),
                 decoration: const BoxDecoration(
-                  color: Colors.white24,
+                  color: Color(0xFFF3F0E9),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.close, color: Colors.white, size: 24),
+                child: const Icon(
+                  Icons.close,
+                  color: Color(0xFF15130F),
+                  size: 24,
+                ),
               ),
             ),
           ),

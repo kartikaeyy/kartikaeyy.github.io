@@ -3,7 +3,6 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../data/portfolio_data.dart';
@@ -39,7 +38,20 @@ class HeyPage extends StatelessWidget {
               ContentFrame(
                 top: topPad,
                 bottom: isMobile ? 32 : 40,
-                child: const _HeroContent(),
+                // On wide screens the hero is set as a spread: the masthead on
+                // the left, a colophon of hard facts in the outer column. The
+                // single-column version simply drops the colophon rather than
+                // stacking it, so phones still open on the headline.
+                child: Breaks.isDesktop(context)
+                    ? const Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(flex: 7, child: _HeroContent()),
+                          SizedBox(width: 64),
+                          Expanded(flex: 4, child: _Colophon()),
+                        ],
+                      )
+                    : const _HeroContent(),
               ),
               if (scope != null)
                 Padding(
@@ -63,6 +75,7 @@ class _HeroContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pal = context.palette;
     final isMobile = Breaks.isMobile(context);
     final scope = SectionScope.maybeOf(context);
     final nameSize = Layout.fluid(context, min: 44, max: 98);
@@ -72,15 +85,24 @@ class _HeroContent extends StatelessWidget {
       children: [
         const _StatusPill(),
         SizedBox(height: isMobile ? 22 : 28),
-        Text(
-              'Kartikey\nSrivastava',
-              style: GoogleFonts.inter(
-                fontSize: nameSize,
-                fontWeight: FontWeight.w800,
-                color: AppColors.ink,
-                height: 0.92,
-                letterSpacing: -nameSize * 0.038,
+        // The surname drops to italic — one typographic gesture instead of a
+        // second colour, which is how a masthead usually earns its emphasis.
+        Text.rich(
+              TextSpan(
+                children: [
+                  const TextSpan(text: 'Kartikey\n'),
+                  TextSpan(
+                    text: 'Srivastava',
+                    style: AppType.display(
+                      context,
+                      size: nameSize,
+                      height: 0.92,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ],
               ),
+              style: AppType.display(context, size: nameSize, height: 0.92),
             )
             .animate()
             .fadeIn(delay: 80.ms, duration: 800.ms)
@@ -88,12 +110,13 @@ class _HeroContent extends StatelessWidget {
         SizedBox(height: isMobile ? 18 : 24),
         Text(
               'Crafting apps that people love to use.',
-              style: GoogleFonts.inter(
-                fontSize: Layout.fluid(context, min: 18, max: 26),
-                fontWeight: FontWeight.w500,
-                color: AppColors.ink.withValues(alpha: 0.9),
-                height: 1.35,
-                letterSpacing: -0.4,
+              style: AppType.ui(
+                context,
+                size: Layout.fluid(context, min: 17, max: 23),
+                weight: FontWeight.w500,
+                color: pal.ink,
+                height: 1.4,
+                letterSpacing: -0.3,
               ),
             )
             .animate()
@@ -107,10 +130,11 @@ class _HeroContent extends StatelessWidget {
                     'Flutter developer shipping cross-platform apps for iOS and '
                     'Android — onboarding revamps, app-wide localization and the '
                     'kind of animation detail you feel more than you notice.',
-                    style: GoogleFonts.inter(
-                      fontSize: isMobile ? 15 : 17,
-                      color: AppColors.inkLight,
-                      height: 1.7,
+                    style: AppType.ui(
+                      context,
+                      size: isMobile ? 15 : 16.5,
+                      color: pal.inkLight,
+                      height: 1.75,
                     ),
                   )
                   .animate()
@@ -162,28 +186,45 @@ class _StatusPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pal = context.palette;
     final current = kExperiences.first;
     final isMobile = Breaks.isMobile(context);
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: pal.paperRaised,
         borderRadius: BorderRadius.circular(Radii.chip),
-        border: Border.all(color: AppColors.strokeStrong),
+        border: Border.all(color: pal.ruleStrong),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
+          // Slow blink on the dot: the one thing on the hero that moves on its
+          // own, and it is the thing that says "available now".
+          Container(
+                width: 6,
+                height: 6,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: pal.live,
+                ),
+              )
+              .animate(onPlay: (c) => c.repeat(reverse: true))
+              // Breathes between dim and full rather than blinking out — the
+              // dot should always be readable as present.
+              .fadeIn(begin: 0.35, duration: 1100.ms, curve: Curves.easeInOut),
+          const SizedBox(width: 9),
           Flexible(
             child: Text(
-              '${current.role} @ ${current.company}',
+              '${current.role} @ ${current.company}'.toUpperCase(),
               overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.inter(
-                fontSize: isMobile ? 10 : 13,
-                fontWeight: FontWeight.w600,
-                color: AppColors.ink,
-                letterSpacing: 0.1,
+              style: AppType.mono(
+                context,
+                size: isMobile ? 9.5 : 11,
+                weight: FontWeight.w600,
+                color: pal.ink,
+                letterSpacing: 1.2,
               ),
             ),
           ),
@@ -200,6 +241,7 @@ class _HeroStats extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pal = context.palette;
     final isMobile = Breaks.isMobile(context);
 
     return Column(
@@ -210,12 +252,100 @@ class _HeroStats extends StatelessWidget {
           constraints: const BoxConstraints(maxWidth: 520),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [AppColors.strokeStrong, Colors.transparent],
+              colors: [pal.ruleStrong, pal.ruleStrong.withValues(alpha: 0)],
             ),
           ),
         ),
         SizedBox(height: isMobile ? 18 : 22),
       ],
+    );
+  }
+}
+
+/// The masthead's facing column: the facts a recruiter scans for, set as a
+/// colophon. Every row is computed from the portfolio data, so there is nothing
+/// here to keep in sync by hand.
+class _Colophon extends StatelessWidget {
+  const _Colophon();
+
+  @override
+  Widget build(BuildContext context) {
+    final pal = context.palette;
+    final current = kExperiences.first;
+    final companies = kExperiences.map((e) => e.company).join(' · ');
+    final rows = <(String, String)>[
+      ('Currently', '${current.role}\n${current.company}'),
+      ('Shipped', '${kFeatures.length.toString().padLeft(2, '0')} features'),
+      ('Worked at', companies),
+      ('Toolkit', '${kSkills.length} tools · ${kSkills.take(2).join(", ")}'),
+      ('Studying', '${kEducation.degree}\nGraduating ${kEducation.period}'),
+    ];
+
+    return Container(
+          padding: const EdgeInsets.fromLTRB(24, 22, 24, 8),
+          decoration: BoxDecoration(
+            color: pal.paperRaised.withValues(alpha: 0.7),
+            borderRadius: BorderRadius.circular(Radii.panel),
+            border: Border.all(color: pal.rule),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Eyebrow(label: 'Colophon'),
+              const SizedBox(height: Space.md),
+              for (final (label, value) in rows)
+                _ColophonRow(label: label, value: value),
+            ],
+          ),
+        )
+        .animate()
+        .fadeIn(delay: 640.ms, duration: 700.ms)
+        .slideY(begin: 0.12, end: 0, curve: Motion.curve);
+  }
+}
+
+class _ColophonRow extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _ColophonRow({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    final pal = context.palette;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const HairRule(),
+          const SizedBox(height: 10),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: 86,
+                child: Text(
+                  label.toUpperCase(),
+                  style: AppType.mono(context, size: 9.5, letterSpacing: 1.3),
+                ),
+              ),
+              Expanded(
+                child: Text(
+                  value,
+                  style: AppType.ui(
+                    context,
+                    size: 13.5,
+                    weight: FontWeight.w500,
+                    color: pal.ink,
+                    height: 1.45,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
@@ -228,6 +358,7 @@ class _ScrollCue extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pal = context.palette;
     return Pressable(
       onPressed: onTap,
       semanticLabel: 'Scroll to my work',
@@ -239,18 +370,19 @@ class _ScrollCue extends StatelessWidget {
           children: [
             Text(
               'SCROLL',
-              style: GoogleFonts.inter(
-                fontSize: 10.5,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 2.4,
-                color: AppColors.inkLight,
+              style: AppType.mono(
+                context,
+                size: 10,
+                weight: FontWeight.w600,
+                color: pal.inkFaint,
+                letterSpacing: 2.6,
               ),
             ),
             const SizedBox(height: 8),
-            const Icon(
+            Icon(
                   Icons.keyboard_arrow_down_rounded,
                   size: 22,
-                  color: AppColors.inkLight,
+                  color: pal.inkFaint,
                 )
                 .animate(onPlay: (c) => c.repeat(reverse: true))
                 .moveY(
@@ -266,66 +398,87 @@ class _ScrollCue extends StatelessWidget {
   }
 }
 
-/// Warm gradient, drifting light and a faint dot grid. Replaces the loose
-/// hand-drawn squiggles with something that reads as depth at any size.
+/// Bone stock with two washes of ink bleeding in from the margins and the
+/// column grid of the layout showing faintly through, the way register marks
+/// and rules stay visible on a press sheet. Replaces the dark gradient, glowing
+/// orbs and dot grid the previous theme floated the hero on.
 class _HeroBackdrop extends StatelessWidget {
   const _HeroBackdrop();
 
   @override
   Widget build(BuildContext context) {
+    final pal = context.palette;
     final isMobile = Breaks.isMobile(context);
     return RepaintBoundary(
       child: Stack(
         fit: StackFit.expand,
         children: [
-          const DecoratedBox(
+          DecoratedBox(
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Color(0xFF3A3113),
-                  Color(0xFF1B1720),
-                  AppColors.background,
+                  pal.heroTop, // stock sits slightly off at the masthead
+                  pal.paper,
+                  pal.paper,
                 ],
-                stops: [0.0, 0.46, 0.92],
+                stops: const [0.0, 0.55, 1.0],
               ),
             ),
           ),
           Positioned(
-            top: -160,
-            right: isMobile ? -180 : -80,
-            child: _Orb(
-              size: isMobile ? 420 : 620,
-              color: AppColors.glowYellow,
-              alpha: 0.14,
-              seconds: 9,
+            top: -170,
+            right: isMobile ? -190 : -70,
+            child: _Wash(
+              size: isMobile ? 440 : 660,
+              color: pal.accent,
+              alpha: 0.13,
+              seconds: 11,
             ),
           ),
           Positioned(
-            bottom: -140,
-            left: isMobile ? -200 : -60,
-            child: _Orb(
-              size: isMobile ? 380 : 560,
-              color: const Color(0xFF7C5CFF),
+            bottom: -150,
+            left: isMobile ? -210 : -60,
+            child: _Wash(
+              size: isMobile ? 400 : 580,
+              color: pal.vermillion,
               alpha: 0.10,
-              seconds: 12,
+              seconds: 14,
             ),
           ),
-          const Positioned.fill(child: CustomPaint(painter: _GridPainter())),
+          Positioned.fill(
+            child: CustomPaint(
+              painter: _ColumnGridPainter(
+                gutter: Layout.sidePad(context),
+                columns: isMobile ? 4 : 12,
+                ink: pal.ink,
+              ),
+            ),
+          ),
+          // A single hard rule closes the hero, the way a masthead is ruled off
+          // from the story beneath it.
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: HairRule(color: pal.ruleStrong),
+          ),
         ],
       ),
     );
   }
 }
 
-class _Orb extends StatelessWidget {
+/// A soft disc of colour drifting behind the type — ink soaking into stock,
+/// pitched low enough that it never competes with the headline.
+class _Wash extends StatelessWidget {
   final double size;
   final Color color;
   final double alpha;
   final int seconds;
 
-  const _Orb({
+  const _Wash({
     required this.size,
     required this.color,
     required this.alpha,
@@ -344,7 +497,7 @@ class _Orb extends StatelessWidget {
                   gradient: RadialGradient(
                     colors: [
                       color.withValues(alpha: alpha),
-                      Colors.transparent,
+                      color.withValues(alpha: 0),
                     ],
                     stops: const [0.0, 1.0],
                   ),
@@ -361,37 +514,45 @@ class _Orb extends StatelessWidget {
   }
 }
 
-/// Faint dot grid plus a top vignette — texture you notice only as polish.
-class _GridPainter extends CustomPainter {
-  const _GridPainter();
+/// The layout's own column grid, drawn at the threshold of visibility. It sits
+/// on the same gutter every section uses, so the hero quietly shows the
+/// skeleton the rest of the page is set on.
+class _ColumnGridPainter extends CustomPainter {
+  final double gutter;
+  final int columns;
+
+  /// Handed in rather than read from a palette: a painter has no context, and
+  /// the rules have to flip with the edition like everything else.
+  final Color ink;
+
+  const _ColumnGridPainter({
+    required this.gutter,
+    required this.columns,
+    required this.ink,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
-    const spacing = 34.0;
-    final dot = Paint()..color = Colors.white.withValues(alpha: 0.035);
-    for (var y = spacing; y < size.height; y += spacing) {
-      // Fade the grid out toward the bottom so it dissolves into the page.
-      final fade = 1 - (y / size.height).clamp(0.0, 1.0);
-      dot.color = Colors.white.withValues(alpha: 0.05 * fade);
-      for (var x = spacing; x < size.width; x += spacing) {
-        canvas.drawCircle(Offset(x, y), 1, dot);
+    final usable = size.width - gutter * 2;
+    if (usable <= 0) return;
+    final step = usable / columns;
+
+    final line = Paint()..strokeWidth = 1;
+    for (var i = 0; i <= columns; i++) {
+      final x = gutter + step * i;
+      // Column rules fade out toward the bottom so the grid dissolves into the
+      // page rather than ending in a hard stop.
+      for (var seg = 0; seg < 24; seg++) {
+        final y0 = size.height * (seg / 24);
+        final y1 = size.height * ((seg + 1) / 24);
+        final fade = 1 - (seg / 24);
+        line.color = ink.withValues(alpha: 0.045 * fade * fade);
+        canvas.drawLine(Offset(x, y0), Offset(x, y1), line);
       }
     }
-
-    final vignette = Paint()
-      ..shader =
-          RadialGradient(
-            colors: [Colors.transparent, Colors.black.withValues(alpha: 0.35)],
-            stops: const [0.55, 1.0],
-          ).createShader(
-            Rect.fromCircle(
-              center: Offset(size.width * 0.5, size.height * 0.35),
-              radius: math.max(size.width, size.height) * 0.75,
-            ),
-          );
-    canvas.drawRect(Offset.zero & size, vignette);
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _ColumnGridPainter old) =>
+      old.gutter != gutter || old.columns != columns || old.ink != ink;
 }

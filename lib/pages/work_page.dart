@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../data/portfolio_data.dart';
 import '../theme/app_theme.dart';
 import '../widgets/experience_timeline.dart';
@@ -45,6 +44,7 @@ class _WorkPageState extends State<WorkPage> {
 
   @override
   Widget build(BuildContext context) {
+    final pal = context.palette;
     final isMobile = MediaQuery.of(context).size.width < 768;
 
     // The carousel bleeds to the left screen edge; only the heading and
@@ -52,8 +52,8 @@ class _WorkPageState extends State<WorkPage> {
     final sidePadding = EdgeInsets.symmetric(horizontal: isMobile ? 24 : 80);
 
     return Container(
-      color: AppColors.background,
-      padding: const EdgeInsets.only(top: 128, bottom: 80),
+      color: pal.background,
+      padding: const EdgeInsets.only(top: 120, bottom: 80),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -97,23 +97,22 @@ class _SectionHeading extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        const Eyebrow(
+          label: 'Selected work',
+        ).animate().fadeIn(duration: 500.ms),
+        const SizedBox(height: Space.md),
         Text(
           'My Work',
-          style: GoogleFonts.inter(
-            fontSize: isMobile ? 48 : 80,
-            fontWeight: FontWeight.w800,
-            color: AppColors.ink,
+          style: AppType.display(
+            context,
+            size: isMobile ? 52 : 88,
             height: 0.95,
-            letterSpacing: -2,
           ),
         ).animate().fadeIn(duration: 600.ms).slideY(begin: 0.2, end: 0),
         const SizedBox(height: 12),
         Text(
           'Features I built, shipped & shaped',
-          style: GoogleFonts.inter(
-            fontSize: isMobile ? 16 : 18,
-            color: AppColors.inkLight,
-          ),
+          style: AppType.ui(context, size: isMobile ? 16 : 18),
         ).animate().fadeIn(delay: 200.ms, duration: 600.ms),
       ],
     );
@@ -207,6 +206,7 @@ class _Controls extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pal = context.palette;
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -221,9 +221,7 @@ class _Controls extends StatelessWidget {
               width: active ? 28 : 8,
               height: 8,
               decoration: BoxDecoration(
-                color: active
-                    ? AppColors.ink
-                    : AppColors.ink.withValues(alpha: 0.2),
+                color: active ? pal.ink : pal.ruleStrong,
                 borderRadius: BorderRadius.circular(4),
               ),
             );

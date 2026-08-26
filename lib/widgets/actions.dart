@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../theme/app_theme.dart';
 
@@ -90,12 +89,11 @@ class _PressableState extends State<Pressable> {
 }
 
 /// Ring drawn around a control while it holds keyboard focus.
-BoxBorder focusRing(bool focused, {Color? color}) => Border.all(
-  color: focused
-      ? (color ?? AppColors.heroYellow).withValues(alpha: 0.85)
-      : Colors.transparent,
-  width: 2,
-);
+BoxBorder focusRing(BuildContext context, bool focused, {Color? color}) =>
+    Border.all(
+      color: focused ? (color ?? context.palette.accent) : Colors.transparent,
+      width: 2,
+    );
 
 enum ActionTone { solid, ghost }
 
@@ -121,62 +119,61 @@ class ActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pal = context.palette;
     final solid = tone == ActionTone.solid;
-    final hPad = compact ? 18.0 : 24.0;
-    final vPad = compact ? 12.0 : 16.0;
+    final hPad = compact ? 20.0 : 26.0;
+    final vPad = compact ? 12.0 : 15.0;
 
     return Pressable(
       onPressed: onPressed,
       semanticLabel: label,
       tooltip: tooltip,
       builder: (context, hovered, focused) {
-        final content = AnimatedContainer(
+        // The solid button rides on a block of vermillion offset down-right.
+        // Hovering slides the button onto its own shade, the way a key plate
+        // drops into register — a press you feel rather than a glow.
+        final slide = solid && hovered ? 3.0 : 0.0;
+
+        final face = AnimatedContainer(
           duration: Motion.fast,
           curve: Motion.curve,
+          transform: Matrix4.translationValues(slide, slide, 0),
           padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
           decoration: BoxDecoration(
             color: solid
-                ? (hovered ? AppColors.heroYellowLight : AppColors.heroYellow)
-                : Colors.white.withValues(alpha: hovered ? 0.10 : 0.04),
-            borderRadius: BorderRadius.circular(Radii.chip),
+                ? (hovered ? pal.accentDark : pal.accent)
+                : (hovered ? pal.paperRaised : Colors.transparent),
+            borderRadius: BorderRadius.circular(Radii.button),
             border: Border.all(
               color: solid
                   ? Colors.transparent
-                  : (hovered ? AppColors.strokeStrong : AppColors.stroke),
+                  : (hovered ? pal.ink : pal.ruleStrong),
             ),
-            boxShadow: solid
-                ? [
-                    BoxShadow(
-                      color: AppColors.glowYellow.withValues(
-                        alpha: hovered ? 0.42 : 0.26,
-                      ),
-                      blurRadius: hovered ? 34 : 22,
-                      offset: const Offset(0, 10),
-                    ),
-                  ]
-                : null,
+            boxShadow: solid || !hovered ? null : pal.restShadow,
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
                 label,
-                style: GoogleFonts.inter(
-                  fontSize: compact ? 14 : 15.5,
-                  fontWeight: FontWeight.w600,
-                  color: solid ? AppColors.background : AppColors.ink,
+                style: AppType.ui(
+                  context,
+                  size: compact ? 13.5 : 15,
+                  weight: FontWeight.w600,
+                  color: solid ? pal.paper : pal.ink,
                   height: 1.1,
+                  letterSpacing: -0.1,
                 ),
               ),
               if (icon != null) ...[
-                const SizedBox(width: 8),
+                const SizedBox(width: 9),
                 AnimatedSlide(
                   duration: Motion.fast,
-                  offset: hovered ? const Offset(0.18, 0) : Offset.zero,
+                  offset: hovered ? const Offset(0.2, 0) : Offset.zero,
                   child: Icon(
                     icon,
                     size: compact ? 16 : 18,
-                    color: solid ? AppColors.background : AppColors.ink,
+                    color: solid ? pal.paper : pal.ink,
                   ),
                 ),
               ],
@@ -184,17 +181,19 @@ class ActionButton extends StatelessWidget {
           ),
         );
 
-        return AnimatedScale(
-          duration: Motion.fast,
-          scale: hovered ? 1.02 : 1,
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(Radii.chip + 4),
-              border: focusRing(focused),
-            ),
-            padding: const EdgeInsets.all(3),
-            child: content,
+        return Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(Radii.button + 4),
+            border: focusRing(context, focused),
           ),
+          padding: const EdgeInsets.all(3),
+          child: solid
+              ? PrintOffset(
+                  color: pal.vermillion,
+                  offset: const Offset(4, 4),
+                  child: face,
+                )
+              : face,
         );
       },
     );
@@ -218,6 +217,7 @@ class IconAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pal = context.palette;
     return Pressable(
       onPressed: onPressed,
       tooltip: tooltip,
@@ -229,21 +229,18 @@ class IconAction extends StatelessWidget {
         height: size,
         transform: Matrix4.translationValues(0, hovered ? -2 : 0, 0),
         decoration: BoxDecoration(
-          color: hovered
-              ? AppColors.heroYellow
-              : Colors.white.withValues(alpha: 0.05),
+          color: hovered ? pal.ink : pal.paperRaised,
           shape: BoxShape.circle,
           border: Border.all(
-            color: focused
-                ? AppColors.heroYellow
-                : (hovered ? Colors.transparent : AppColors.strokeStrong),
+            color: focused ? pal.accent : (hovered ? pal.ink : pal.ruleStrong),
             width: focused ? 2 : 1,
           ),
+          boxShadow: hovered ? pal.restShadow : null,
         ),
         child: Center(
           child: icon.build(
             size: size * 0.42,
-            color: hovered ? AppColors.background : AppColors.ink,
+            color: hovered ? pal.paper : pal.ink,
           ),
         ),
       ),

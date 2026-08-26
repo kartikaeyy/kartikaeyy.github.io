@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../data/portfolio_data.dart';
 import '../theme/app_theme.dart';
@@ -51,8 +50,10 @@ class _TimelineRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pal = context.palette;
     final isMobile = Breaks.isMobile(context);
     final railWidth = isMobile ? 26.0 : 40.0;
+    final current = exp.period.toLowerCase().contains('present');
 
     // The rail line is painted as a positioned child rather than an Expanded
     // inside an IntrinsicHeight: intrinsic sizing over the card's wrapping text
@@ -70,10 +71,8 @@ class _TimelineRow extends StatelessWidget {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  AppColors.heroYellow.withValues(alpha: 0.35),
-                  isLast
-                      ? Colors.transparent
-                      : Colors.white.withValues(alpha: 0.08),
+                  pal.ruleStrong,
+                  isLast ? const Color(0x0015130F) : pal.rule,
                 ],
               ),
             ),
@@ -88,18 +87,18 @@ class _TimelineRow extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const SizedBox(height: 26),
+                  // A registration mark on the rail: ring for past roles,
+                  // filled for the one that is still running.
                   Container(
                     width: 11,
                     height: 11,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: AppColors.heroYellow,
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.glowYellow.withValues(alpha: 0.5),
-                          blurRadius: 12,
-                        ),
-                      ],
+                      color: current ? pal.vermillion : pal.paper,
+                      border: Border.all(
+                        color: current ? pal.vermillion : pal.ink,
+                        width: 1.5,
+                      ),
                     ),
                   ),
                 ],
@@ -107,7 +106,9 @@ class _TimelineRow extends StatelessWidget {
             ),
             Expanded(
               child: Padding(
-                padding: EdgeInsets.only(bottom: isMobile ? Space.md : Space.md),
+                padding: EdgeInsets.only(
+                  bottom: isMobile ? Space.md : Space.md,
+                ),
                 child: _ExperienceCard(exp: exp),
               ),
             ),
@@ -131,6 +132,7 @@ class _ExperienceCardState extends State<_ExperienceCard> {
 
   @override
   Widget build(BuildContext context) {
+    final pal = context.palette;
     final isMobile = Breaks.isMobile(context);
     final exp = widget.exp;
 
@@ -141,21 +143,12 @@ class _ExperienceCardState extends State<_ExperienceCard> {
         duration: Motion.base,
         curve: Motion.curve,
         padding: EdgeInsets.all(isMobile ? 20 : 28),
+        transform: Matrix4.translationValues(0, _hovered ? -3 : 0, 0),
         decoration: BoxDecoration(
-          color: _hovered
-              ? AppColors.cardHover.withValues(alpha: 0.75)
-              : AppColors.cardBg.withValues(alpha: 0.7),
+          color: _hovered ? pal.paperWhite : pal.paperRaised,
           borderRadius: BorderRadius.circular(Radii.card),
-          border: Border.all(
-            color: _hovered ? AppColors.strokeStrong : AppColors.stroke,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: _hovered ? 0.4 : 0.25),
-              blurRadius: _hovered ? 38 : 24,
-              offset: const Offset(0, 14),
-            ),
-          ],
+          border: Border.all(color: _hovered ? pal.ruleStrong : pal.rule),
+          boxShadow: _hovered ? pal.liftedShadow : pal.restShadow,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -171,20 +164,21 @@ class _ExperienceCardState extends State<_ExperienceCard> {
                     children: [
                       Text(
                         exp.role,
-                        style: GoogleFonts.inter(
-                          fontSize: isMobile ? 17 : 19,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.ink,
-                          height: 1.25,
+                        style: AppType.display(
+                          context,
+                          size: isMobile ? 21 : 25,
+                          height: 1.15,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 5),
                       Text(
-                        exp.company,
-                        style: GoogleFonts.inter(
-                          fontSize: 14.5,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.inkLight,
+                        exp.company.toUpperCase(),
+                        style: AppType.mono(
+                          context,
+                          size: 10.5,
+                          weight: FontWeight.w600,
+                          color: pal.inkLight,
+                          letterSpacing: 1.5,
                         ),
                       ),
                       if (isMobile) ...[
@@ -200,10 +194,11 @@ class _ExperienceCardState extends State<_ExperienceCard> {
             const SizedBox(height: Space.md),
             Text(
               exp.description,
-              style: GoogleFonts.inter(
-                fontSize: isMobile ? 14.5 : 15.5,
-                color: AppColors.inkLight,
-                height: 1.65,
+              style: AppType.ui(
+                context,
+                size: isMobile ? 14.5 : 15.5,
+                color: pal.inkLight,
+                height: 1.7,
               ),
             ),
             const SizedBox(height: Space.md),
@@ -225,20 +220,21 @@ class _CompanyMark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pal = context.palette;
     final logo = exp.logoAsset;
     return Container(
       width: _size,
       height: _size,
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(13),
-        color: Colors.white.withValues(alpha: 0.06),
-        border: Border.all(color: AppColors.strokeStrong),
+        borderRadius: BorderRadius.circular(Radii.inset),
+        color: pal.paperWhite,
+        border: Border.all(color: pal.ruleStrong),
       ),
       child: logo == null
           ? _Monogram(label: exp.company)
           : ClipRRect(
-              borderRadius: BorderRadius.circular(9),
+              borderRadius: BorderRadius.circular(2),
               child: Image.asset(
                 logo,
                 fit: BoxFit.contain,
@@ -258,26 +254,16 @@ class _Monogram extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pal = context.palette;
     return DecoratedBox(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(9),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppColors.heroYellow.withValues(alpha: 0.22),
-            AppColors.heroYellow.withValues(alpha: 0.06),
-          ],
-        ),
+        borderRadius: BorderRadius.all(Radius.circular(2)),
+        color: pal.accentWash,
       ),
       child: Center(
         child: Text(
           label.characters.first.toUpperCase(),
-          style: GoogleFonts.inter(
-            fontSize: 17,
-            fontWeight: FontWeight.w800,
-            color: AppColors.heroYellow,
-          ),
+          style: AppType.display(context, size: 20, color: pal.accent),
         ),
       ),
     );
@@ -290,18 +276,16 @@ class PeriodPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pal = context.palette;
     final current = text.toLowerCase().contains('present');
+    final tone = current ? pal.live : pal.inkLight;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
       decoration: BoxDecoration(
-        color: (current ? AppColors.live : AppColors.heroYellow).withValues(
-          alpha: 0.12,
-        ),
+        color: current ? pal.paperWhite : Colors.transparent,
         borderRadius: BorderRadius.circular(Radii.chip),
         border: Border.all(
-          color: (current ? AppColors.live : AppColors.heroYellow).withValues(
-            alpha: 0.3,
-          ),
+          color: current ? pal.live.withValues(alpha: 0.45) : pal.ruleStrong,
         ),
       ),
       child: Row(
@@ -311,19 +295,21 @@ class PeriodPill extends StatelessWidget {
             Container(
               width: 6,
               height: 6,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.live,
+                color: pal.live,
               ),
             ),
             const SizedBox(width: 7),
           ],
           Text(
-            text,
-            style: GoogleFonts.inter(
-              fontSize: 12.5,
-              fontWeight: FontWeight.w600,
-              color: current ? AppColors.live : AppColors.heroYellow,
+            text.toUpperCase(),
+            style: AppType.mono(
+              context,
+              size: 10,
+              weight: FontWeight.w600,
+              color: tone,
+              letterSpacing: 1.1,
             ),
           ),
         ],
@@ -352,27 +338,26 @@ class _Bullet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pal = context.palette;
     return Padding(
       padding: const EdgeInsets.only(bottom: 9),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            margin: const EdgeInsets.only(top: 8, right: 12),
-            width: 5,
-            height: 5,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: AppColors.heroYellow.withValues(alpha: 0.7),
-            ),
+            margin: const EdgeInsets.only(top: 11, right: 12),
+            width: 10,
+            height: 1.5,
+            color: pal.vermillion,
           ),
           Expanded(
             child: Text(
               text,
-              style: GoogleFonts.inter(
-                fontSize: 14.5,
-                color: AppColors.inkLight,
-                height: 1.6,
+              style: AppType.ui(
+                context,
+                size: 14.5,
+                color: pal.inkLight,
+                height: 1.65,
               ),
             ),
           ),

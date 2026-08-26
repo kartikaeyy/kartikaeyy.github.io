@@ -1,18 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../theme/app_theme.dart';
-
-/// Hue per skill, kept as a small dot instead of a filled pastel pill — the
-/// solid pastels fought the dark page and made every tag shout equally loud.
-const _dotColors = [
-  Color(0xFF6EC1FF),
-  Color(0xFF5FE3A1),
-  Color(0xFFFFD866),
-  Color(0xFFC79BFF),
-  Color(0xFFFF9E6B),
-  Color(0xFF61E0D2),
-];
 
 class SkillTag extends StatefulWidget {
   final String label;
@@ -29,7 +17,9 @@ class _SkillTagState extends State<SkillTag> {
 
   @override
   Widget build(BuildContext context) {
-    final dot = _dotColors[widget.colorIndex % _dotColors.length];
+    final pal = context.palette;
+    final dots = pal.skillDots;
+    final dot = dots[widget.colorIndex % dots.length];
     return MouseRegion(
       onEnter: (_) => setState(() => _hovered = true),
       onExit: (_) => setState(() => _hovered = false),
@@ -39,11 +29,10 @@ class _SkillTagState extends State<SkillTag> {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
         transform: Matrix4.translationValues(0, _hovered ? -2 : 0, 0),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: _hovered ? 0.09 : 0.045),
+          color: _hovered ? pal.paperWhite : pal.paper,
           borderRadius: BorderRadius.circular(Radii.chip),
-          border: Border.all(
-            color: _hovered ? dot.withValues(alpha: 0.55) : AppColors.stroke,
-          ),
+          border: Border.all(color: _hovered ? dot : pal.ruleStrong),
+          boxShadow: _hovered ? pal.restShadow : null,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -58,8 +47,8 @@ class _SkillTagState extends State<SkillTag> {
                 boxShadow: _hovered
                     ? [
                         BoxShadow(
-                          color: dot.withValues(alpha: 0.6),
-                          blurRadius: 8,
+                          color: dot.withValues(alpha: 0.45),
+                          blurRadius: 7,
                         ),
                       ]
                     : null,
@@ -68,10 +57,12 @@ class _SkillTagState extends State<SkillTag> {
             const SizedBox(width: 9),
             Text(
               widget.label,
-              style: GoogleFonts.inter(
-                fontSize: 13.5,
-                fontWeight: FontWeight.w500,
-                color: _hovered ? AppColors.ink : AppColors.inkLight,
+              style: AppType.mono(
+                context,
+                size: 11.5,
+                weight: FontWeight.w500,
+                color: _hovered ? pal.ink : pal.inkLight,
+                letterSpacing: 0.2,
               ),
             ),
           ],

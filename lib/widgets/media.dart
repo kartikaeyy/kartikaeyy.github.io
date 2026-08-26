@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:video_player/video_player.dart';
 
 import '../data/portfolio_data.dart';
@@ -16,10 +15,15 @@ const double kPhoneAspect = 9 / 19.5;
 class PhoneFrame extends StatelessWidget {
   final Widget child;
   final double aspectRatio;
-  const PhoneFrame({super.key, required this.child, this.aspectRatio = kPhoneAspect});
+  const PhoneFrame({
+    super.key,
+    required this.child,
+    this.aspectRatio = kPhoneAspect,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final pal = context.palette;
     return AspectRatio(
       aspectRatio: aspectRatio,
       child: LayoutBuilder(
@@ -33,13 +37,21 @@ class PhoneFrame extends StatelessWidget {
             child: Container(
               padding: EdgeInsets.all(5 * s),
               decoration: BoxDecoration(
-                color: const Color(0xFF0D0D0F),
+                // The bezel is near-black in both editions — a device is a
+                // device — but it drops a step further on the night edition so
+                // the frame still separates from the page behind it.
+                color: pal.bezel,
                 borderRadius: BorderRadius.circular(38 * s),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.28),
-                    blurRadius: 32 * s,
-                    offset: Offset(0, 18 * s),
+                    color: pal.ink.withValues(alpha: 0.10),
+                    blurRadius: 8 * s,
+                    offset: Offset(0, 3 * s),
+                  ),
+                  BoxShadow(
+                    color: pal.ink.withValues(alpha: 0.20),
+                    blurRadius: 40 * s,
+                    offset: Offset(0, 20 * s),
                   ),
                 ],
               ),
@@ -128,19 +140,22 @@ class _MediaViewState extends State<MediaView> {
         : VideoPlayerController.asset(src);
     _controller = controller;
 
-    controller.initialize().then((_) {
-      if (!mounted) return;
-      controller.setLooping(true);
-      if (widget.autoPlay) {
-        controller.setVolume(0); // muted autoplay for card previews
-        controller.play();
-        _playing = true;
-      }
-      setState(() => _initialized = true);
-    }).catchError((_) {
-      // Codec/network failure — fall through to poster/mockup.
-      if (mounted) setState(() => _initialized = false);
-    });
+    controller
+        .initialize()
+        .then((_) {
+          if (!mounted) return;
+          controller.setLooping(true);
+          if (widget.autoPlay) {
+            controller.setVolume(0); // muted autoplay for card previews
+            controller.play();
+            _playing = true;
+          }
+          setState(() => _initialized = true);
+        })
+        .catchError((_) {
+          // Codec/network failure — fall through to poster/mockup.
+          if (mounted) setState(() => _initialized = false);
+        });
   }
 
   @override
@@ -181,7 +196,11 @@ class _MediaViewState extends State<MediaView> {
               ),
             ),
             if (!widget.autoPlay)
-              _PlayOverlay(playing: _playing, accent: widget.accent, onTap: _togglePlay),
+              _PlayOverlay(
+                playing: _playing,
+                accent: widget.accent,
+                onTap: _togglePlay,
+              ),
           ],
         ),
       );
@@ -205,21 +224,22 @@ class _MediaImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pal = context.palette;
     const decodeWidth = 1000; // cap decode cost; ~2x typical card/hero width
     final Widget image = MediaSource.isNetwork(path)
         ? Image.network(
             path,
             fit: fit,
             cacheWidth: decodeWidth,
-            errorBuilder: (_, _, _) => const _MediaFallback(accent: AppColors.inkLight),
+            errorBuilder: (_, _, _) => _MediaFallback(accent: pal.inkLight),
             loadingBuilder: (context, child, progress) =>
-                progress == null ? child : const ColoredBox(color: AppColors.cardBg),
+                progress == null ? child : ColoredBox(color: pal.paperDeep),
           )
         : Image.asset(
             path,
             fit: fit,
             cacheWidth: decodeWidth,
-            errorBuilder: (_, _, _) => const _MediaFallback(accent: AppColors.inkLight),
+            errorBuilder: (_, _, _) => _MediaFallback(accent: pal.inkLight),
           );
     return image;
   }
@@ -230,10 +250,15 @@ class _PlayOverlay extends StatelessWidget {
   final bool playing;
   final Color accent;
   final VoidCallback onTap;
-  const _PlayOverlay({required this.playing, required this.accent, required this.onTap});
+  const _PlayOverlay({
+    required this.playing,
+    required this.accent,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final pal = context.palette;
     return Positioned.fill(
       child: GestureDetector(
         onTap: onTap,
@@ -248,10 +273,13 @@ class _PlayOverlay extends StatelessWidget {
               width: 64,
               height: 64,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: pal.paper,
                 shape: BoxShape.circle,
                 boxShadow: [
-                  BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 16),
+                  BoxShadow(
+                    color: pal.ink.withValues(alpha: 0.28),
+                    blurRadius: 16,
+                  ),
                 ],
               ),
               child: Icon(Icons.play_arrow_rounded, color: accent, size: 40),
@@ -275,21 +303,30 @@ class _MediaFallback extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [accent.withValues(alpha: 0.18), accent.withValues(alpha: 0.05)],
+          colors: [
+            accent.withValues(alpha: 0.22),
+            accent.withValues(alpha: 0.07),
+          ],
         ),
       ),
       child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.phone_iphone_rounded, color: accent.withValues(alpha: 0.55), size: 44),
+            Icon(
+              Icons.phone_iphone_rounded,
+              color: accent.withValues(alpha: 0.55),
+              size: 44,
+            ),
             const SizedBox(height: 10),
             Text(
-              'Media coming soon',
-              style: GoogleFonts.inter(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: accent.withValues(alpha: 0.7),
+              'MEDIA COMING SOON',
+              style: AppType.mono(
+                context,
+                size: 9.5,
+                weight: FontWeight.w600,
+                color: accent.withValues(alpha: 0.75),
+                letterSpacing: 1.4,
               ),
             ),
           ],

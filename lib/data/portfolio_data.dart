@@ -137,7 +137,7 @@ const kFeatures = [
       'assets/videos/welcome_gift_2.mp4',
       'assets/videos/welcome_gift_3.mp4',
     ],
-    accentColor: '#E84A6F',
+    accentColor: '#B8324E',
   ),
   Feature(
     id: 'product-recommendation',
@@ -179,7 +179,7 @@ const kFeatures = [
       'assets/videos/product_rec_2.mp4',
       'assets/videos/product_rec_3.mp4',
     ],
-    accentColor: '#FF6B35',
+    accentColor: '#C25418',
   ),
 
   Feature(
@@ -222,7 +222,7 @@ const kFeatures = [
       'assets/videos/onboarding_junction_2.mp4',
       'assets/videos/onboarding_junction_3.mp4',
     ],
-    accentColor: '#3B82F6',
+    accentColor: '#2438E0',
   ),
 ];
 

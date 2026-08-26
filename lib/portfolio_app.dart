@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'data/portfolio_data.dart';
@@ -12,21 +11,35 @@ import 'pages/hey_page.dart';
 import 'pages/story_page.dart';
 import 'pages/work_page.dart';
 import 'theme/app_theme.dart';
+import 'theme/edition.dart';
 import 'widgets/actions.dart';
 import 'widgets/nav_bar.dart';
 import 'widgets/section_scope.dart';
 
 class PortfolioApp extends StatelessWidget {
-  const PortfolioApp({super.key});
+  /// The edition read off disk in `main`, before the first frame.
+  final ThemeMode initialMode;
+
+  const PortfolioApp({super.key, this.initialMode = ThemeMode.system});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Kartikey — Mobile Developer',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.theme,
-      scrollBehavior: const _SiteScrollBehavior(),
-      home: const _PortfolioShell(),
+    return EditionScope(
+      initialMode: initialMode,
+      builder: (context, mode) => MaterialApp(
+        title: 'Kartikey — Mobile Developer',
+        debugShowCheckedModeBanner: false,
+        // Both editions are handed to MaterialApp rather than one being swapped
+        // in: that is what lets it cross-fade the palette on toggle instead of
+        // cutting, since the whole palette rides in ThemeData.extensions.
+        theme: AppTheme.light,
+        darkTheme: AppTheme.dark,
+        themeMode: mode,
+        themeAnimationDuration: Motion.themeSwap,
+        themeAnimationCurve: Motion.emphasized,
+        scrollBehavior: const _SiteScrollBehavior(),
+        home: const _PortfolioShell(),
+      ),
     );
   }
 }
@@ -138,10 +151,11 @@ class _PortfolioShellState extends State<_PortfolioShell> {
 
   @override
   Widget build(BuildContext context) {
+    final pal = context.palette;
     final isMobile = Breaks.isMobile(context);
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: AppTheme.systemOverlay,
+      value: AppTheme.overlayFor(pal),
       child: SectionScope(
         controller: _scrollController,
         goToSection: _goToSection,
@@ -151,7 +165,7 @@ class _PortfolioShellState extends State<_PortfolioShell> {
         child: PrimaryScrollController(
           controller: _scrollController,
           child: Scaffold(
-            backgroundColor: AppColors.background,
+            backgroundColor: pal.background,
             body: Stack(
               children: [
                 Scrollbar(
@@ -234,26 +248,15 @@ class _ProgressBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pal = context.palette;
     return IgnorePointer(
       child: SizedBox(
-        height: 2,
+        height: 3,
         child: Align(
           alignment: Alignment.centerLeft,
           child: FractionallySizedBox(
             widthFactor: value.clamp(0.0, 1.0),
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [AppColors.heroYellow, AppColors.glowYellow],
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.glowYellow.withValues(alpha: 0.5),
-                    blurRadius: 8,
-                  ),
-                ],
-              ),
-            ),
+            child: ColoredBox(color: pal.accent),
           ),
         ),
       ),
@@ -296,6 +299,7 @@ class _Footer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pal = context.palette;
     final isMobile = Breaks.isMobile(context);
 
     final links = Wrap(
@@ -338,14 +342,15 @@ class _Footer extends StatelessWidget {
     );
 
     final credit = Text(
-      '© 2026 Kartikey Srivastava · Built with Flutter',
+      '© 2026 KARTIKEY SRIVASTAVA · SET IN FLUTTER',
       textAlign: TextAlign.center,
-      style: GoogleFonts.inter(fontSize: 12.5, color: AppColors.inkFaint),
+      style: AppType.mono(context, size: 9.5, letterSpacing: 1.2),
     );
 
     return Container(
-      decoration: const BoxDecoration(
-        border: Border(top: BorderSide(color: AppColors.stroke)),
+      decoration: BoxDecoration(
+        color: pal.paperDeep,
+        border: Border(top: BorderSide(color: pal.ruleStrong)),
       ),
       child: ContentFrame(
         top: isMobile ? 32 : 40,
@@ -386,20 +391,28 @@ class _FooterLink extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pal = context.palette;
     return Pressable(
       onPressed: onTap,
       semanticLabel: '$label section',
       builder: (context, hovered, focused) {
         final active = hovered || focused;
         return Text(
-          label,
-          style: GoogleFonts.inter(
-            fontSize: 13.5,
-            fontWeight: FontWeight.w600,
-            color: active ? AppColors.ink : AppColors.inkLight,
-            decoration: active ? TextDecoration.underline : TextDecoration.none,
-            decorationColor: AppColors.heroYellow,
-          ),
+          label.toUpperCase(),
+          style:
+              AppType.mono(
+                context,
+                size: 10.5,
+                weight: FontWeight.w600,
+                color: active ? pal.ink : pal.inkLight,
+                letterSpacing: 1.4,
+              ).copyWith(
+                decoration: active
+                    ? TextDecoration.underline
+                    : TextDecoration.none,
+                decorationColor: pal.vermillion,
+                decorationThickness: 2,
+              ),
         );
       },
     );

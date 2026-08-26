@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../data/portfolio_data.dart';
 import '../theme/app_theme.dart';
@@ -12,11 +11,12 @@ class StoryPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pal = context.palette;
     final isMobile = Breaks.isMobile(context);
     final gap = isMobile ? Space.xxl : 96.0;
 
     return Container(
-      color: AppColors.background,
+      color: pal.background,
       child: ContentFrame(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -79,11 +79,13 @@ class _Bio extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pal = context.palette;
     final isMobile = Breaks.isMobile(context);
-    final body = GoogleFonts.inter(
-      fontSize: isMobile ? 15 : 16.5,
-      color: AppColors.inkLight,
-      height: 1.75,
+    final body = AppType.ui(
+      context,
+      size: isMobile ? 15 : 16.5,
+      color: pal.inkLight,
+      height: 1.8,
     );
 
     return ConstrainedBox(
@@ -91,17 +93,24 @@ class _Bio extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            "I don't have dark secrets, only bright ones.",
-            style: GoogleFonts.inter(
-              fontSize: isMobile ? 20 : 23,
-              fontWeight: FontWeight.w700,
-              color: AppColors.ink,
-              height: 1.35,
-              letterSpacing: -0.4,
+          // The one line of the page that is allowed to be a pull quote: set
+          // in the display italic and hung off a vermillion rule.
+          Container(
+            padding: const EdgeInsets.only(left: 18),
+            decoration: BoxDecoration(
+              border: Border(left: BorderSide(color: pal.vermillion, width: 2)),
+            ),
+            child: Text(
+              "I don't have dark secrets, only bright ones.",
+              style: AppType.display(
+                context,
+                size: isMobile ? 24 : 30,
+                height: 1.25,
+                fontStyle: FontStyle.italic,
+              ),
             ),
           ),
-          const SizedBox(height: Space.md),
+          const SizedBox(height: Space.lg),
           Text(
             "I'm a Flutter developer and final-year CS student at JUIT, shipping "
             'cross-platform apps that feel great on both iOS and Android. From '
@@ -109,7 +118,7 @@ class _Bio extends StatelessWidget {
             'about every detail that makes an app a pleasure to use.',
             style: body,
           ),
-          const SizedBox(height: Space.sm),
+          SizedBox(height: Space.sm),
           Text(
             "I'm currently a Flutter Intern at Apna Mart, and have built features "
             "at Ente and Imagined. When I'm not writing Dart, I'm contributing to "
@@ -130,6 +139,7 @@ class _Collage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pal = context.palette;
     // Fixed-size cluster, centred in whatever column it lands in — absolute
     // left/right offsets against a full-width box left the cards scattered
     // with a hole in the middle.
@@ -139,7 +149,7 @@ class _Collage extends StatelessWidget {
         height: 376,
         child: Stack(
           clipBehavior: Clip.none,
-          children: const [
+          children: [
             Positioned(
               left: 0,
               top: 0,
@@ -147,7 +157,7 @@ class _Collage extends StatelessWidget {
                 icon: Icons.phone_iphone_rounded,
                 caption: 'Building cool stuff',
                 rotation: -7,
-                tint: Color(0xFF6EC1FF),
+                tint: pal.accent,
               ),
             ),
             Positioned(
@@ -157,7 +167,7 @@ class _Collage extends StatelessWidget {
                 icon: Icons.rocket_launch_rounded,
                 caption: 'Shipping features',
                 rotation: 6,
-                tint: Color(0xFFFFB86B),
+                tint: pal.vermillion,
               ),
             ),
             Positioned(
@@ -167,7 +177,7 @@ class _Collage extends StatelessWidget {
                 icon: Icons.local_cafe_rounded,
                 caption: 'Fuelled by coffee',
                 rotation: 3,
-                tint: Color(0xFFC79BFF),
+                tint: pal.live,
               ),
             ),
           ],
@@ -201,6 +211,7 @@ class _PolaroidState extends State<_Polaroid> {
 
   @override
   Widget build(BuildContext context) {
+    final pal = context.palette;
     return MouseRegion(
       onEnter: (_) => setState(() => _hovered = true),
       onExit: (_) => setState(() => _hovered = false),
@@ -219,46 +230,36 @@ class _PolaroidState extends State<_Polaroid> {
           width: 150,
           padding: const EdgeInsets.fromLTRB(11, 11, 11, 9),
           decoration: BoxDecoration(
-            color: const Color(0xFF1D1D24),
-            borderRadius: BorderRadius.circular(6),
-            border: Border.all(
-              color: _hovered
-                  ? widget.tint.withValues(alpha: 0.4)
-                  : AppColors.stroke,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: _hovered ? 0.55 : 0.4),
-                blurRadius: _hovered ? 34 : 22,
-                offset: Offset(0, _hovered ? 16 : 10),
-              ),
-            ],
+            color: pal.paperWhite,
+            borderRadius: BorderRadius.circular(Radii.inset),
+            border: Border.all(color: _hovered ? widget.tint : pal.rule),
+            boxShadow: _hovered ? pal.liftedShadow : pal.restShadow,
           ),
           child: Column(
             children: [
               Container(
                 height: 108,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(3),
+                  borderRadius: BorderRadius.circular(2),
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [
-                      widget.tint.withValues(alpha: 0.46),
-                      widget.tint.withValues(alpha: 0.16),
-                    ],
+                    colors: [widget.tint, widget.tint.withValues(alpha: 0.72)],
                   ),
                 ),
                 child: Center(
-                  child: Icon(widget.icon, size: 38, color: Colors.white),
+                  child: Icon(widget.icon, size: 36, color: pal.paper),
                 ),
               ),
               const SizedBox(height: 10),
               Text(
                 widget.caption,
-                style: GoogleFonts.pacifico(
-                  fontSize: 12.5,
-                  color: AppColors.ink.withValues(alpha: 0.9),
+                style: AppType.display(
+                  context,
+                  size: 15,
+                  height: 1.2,
+                  fontStyle: FontStyle.italic,
+                  letterSpacing: 0,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -277,8 +278,9 @@ class _Toolkit extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pal = context.palette;
     final isMobile = Breaks.isMobile(context);
-    return GlassPanel(
+    return PaperPanel(
       padding: EdgeInsets.all(isMobile ? 24 : 36),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -294,23 +296,24 @@ class _Toolkit extends StatelessWidget {
                     const SizedBox(height: Space.sm),
                     Text(
                       'What I build with',
-                      style: GoogleFonts.inter(
-                        fontSize: isMobile ? 25 : 32,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.ink,
-                        letterSpacing: -0.8,
+                      style: AppType.display(
+                        context,
+                        size: isMobile ? 28 : 36,
+                        height: 1.1,
                       ),
                     ),
                   ],
                 ),
               ),
+              // A folio number in the corner of the sheet.
               Text(
-                '${kSkills.length}',
-                style: GoogleFonts.inter(
-                  fontSize: isMobile ? 26 : 34,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.ink.withValues(alpha: 0.12),
-                  height: 1,
+                kSkills.length.toString().padLeft(2, '0'),
+                style: AppType.mono(
+                  context,
+                  size: isMobile ? 13 : 15,
+                  weight: FontWeight.w600,
+                  color: pal.inkFaint,
+                  letterSpacing: 1,
                 ),
               ),
             ],
@@ -354,7 +357,7 @@ class _EducationSection extends StatelessWidget {
         SizedBox(height: isMobile ? Space.lg : Space.xl),
         Reveal(
           delay: const Duration(milliseconds: 80),
-          child: GlassPanel(
+          child: PaperPanel(
             padding: EdgeInsets.all(isMobile ? 22 : 28),
             radius: Radii.card,
             child: isMobile
@@ -389,20 +392,17 @@ class _EducationIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pal = context.palette;
     return Container(
       width: 46,
       height: 46,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(14),
-        color: AppColors.heroYellow.withValues(alpha: 0.12),
-        border: Border.all(color: AppColors.heroYellow.withValues(alpha: 0.26)),
+        borderRadius: BorderRadius.circular(Radii.inset),
+        color: pal.accentWash,
+        border: Border.all(color: pal.accent.withValues(alpha: 0.30)),
       ),
-      child: const Icon(
-        Icons.school_rounded,
-        size: 22,
-        color: AppColors.heroYellow,
-      ),
+      child: Icon(Icons.school_rounded, size: 22, color: pal.accent),
     );
   }
 }
@@ -412,27 +412,26 @@ class _EducationText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pal = context.palette;
     final isMobile = Breaks.isMobile(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           kEducation.institution,
-          style: GoogleFonts.inter(
-            fontSize: isMobile ? 17 : 19,
-            fontWeight: FontWeight.w700,
-            color: AppColors.ink,
+          style: AppType.ui(
+            context,
+            size: isMobile ? 17 : 19,
+            weight: FontWeight.w600,
+            color: pal.ink,
             height: 1.3,
+            letterSpacing: -0.2,
           ),
         ),
         const SizedBox(height: 6),
         Text(
           '${kEducation.degree}  ·  ${kEducation.detail}',
-          style: GoogleFonts.inter(
-            fontSize: 14.5,
-            color: AppColors.inkLight,
-            height: 1.5,
-          ),
+          style: AppType.ui(context, size: 14.5, height: 1.55),
         ),
       ],
     );

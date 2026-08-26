@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../data/portfolio_data.dart';
 import '../theme/app_theme.dart';
 import 'media.dart';
@@ -19,8 +18,9 @@ class _FeatureCardState extends State<FeatureCard> {
 
   @override
   Widget build(BuildContext context) {
-    final accent = Color(
-      int.parse(widget.feature.accentColor.replaceFirst('#', '0xFF')),
+    final pal = context.palette;
+    final accent = pal.liftAccent(
+      Color(int.parse(widget.feature.accentColor.replaceFirst('#', '0xFF'))),
     );
     return MouseRegion(
       onEnter: (_) => setState(() => _hovered = true),
@@ -30,29 +30,16 @@ class _FeatureCardState extends State<FeatureCard> {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           decoration: BoxDecoration(
-            color: _hovered ? AppColors.cardHover : AppColors.cardBg,
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: _hovered
-                  ? accent.withValues(alpha: 0.45)
-                  : AppColors.stroke,
-            ),
-            boxShadow: _hovered
-                ? [
-                    BoxShadow(
-                      color: accent.withValues(alpha: 0.28),
-                      blurRadius: 40,
-                      spreadRadius: -4,
-                      offset: const Offset(0, 16),
-                    ),
-                  ]
-                : const [],
+            color: _hovered ? pal.paperWhite : pal.paperRaised,
+            borderRadius: BorderRadius.circular(Radii.panel),
+            border: Border.all(color: _hovered ? accent : pal.rule),
+            boxShadow: _hovered ? pal.tintedShadow(accent) : pal.restShadow,
           ),
           child: LayoutBuilder(
             builder: (context, constraints) {
               // Wide cards (desktop): phone on the left, content beside it.
               // Narrow cards: phone on top, content stacked below.
-              final wide = constraints.maxWidth >= 480;
+              final wide = constraints.maxWidth >= 620;
               return wide
                   ? _WideLayout(
                       feature: widget.feature,
@@ -120,29 +107,37 @@ class _WideLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const outer = 14.0;
-    return Padding(
-      padding: const EdgeInsets.all(outer),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          SizedBox(
-            width: 500,
-            child: _MediaPanel(
-              feature: feature,
-              accent: accent,
-              showChips: false,
-            ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // The media well takes a share of the card rather than a fixed 500px
+        // slab: on a tablet that slab left the text column barely wider than
+        // the words in it, and the "view feature" line ran off the edge.
+        final mediaWidth = (constraints.maxWidth * 0.52).clamp(280.0, 500.0);
+        return Padding(
+          padding: const EdgeInsets.all(outer),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SizedBox(
+                width: mediaWidth,
+                child: _MediaPanel(
+                  feature: feature,
+                  accent: accent,
+                  showChips: false,
+                ),
+              ),
+              const SizedBox(width: 26),
+              Expanded(
+                child: _WideContent(
+                  feature: feature,
+                  accent: accent,
+                  hovered: hovered,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 26),
-          Expanded(
-            child: _WideContent(
-              feature: feature,
-              accent: accent,
-              hovered: hovered,
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
@@ -159,6 +154,7 @@ class _WideContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pal = context.palette;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
       child: Column(
@@ -177,22 +173,19 @@ class _WideContent extends StatelessWidget {
                       feature.name,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.ink,
-                        letterSpacing: -0.5,
-                      ),
+                      style: AppType.display(context, size: 34, height: 1.05),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 5),
                     Text(
-                      feature.context,
+                      feature.context.toUpperCase(),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
+                      style: AppType.mono(
+                        context,
+                        size: 10.5,
+                        weight: FontWeight.w600,
                         color: accent,
+                        letterSpacing: 1.5,
                       ),
                     ),
                   ],
@@ -205,11 +198,7 @@ class _WideContent extends StatelessWidget {
             feature.tagline,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.inter(
-              fontSize: 16,
-              color: AppColors.inkLight,
-              height: 1.55,
-            ),
+            style: AppType.ui(context, size: 16, height: 1.6),
           ),
           const SizedBox(height: 24),
           Wrap(
@@ -223,23 +212,25 @@ class _WideContent extends StatelessWidget {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                'View feature',
-                style: GoogleFonts.inter(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.ink,
+              Flexible(
+                child: Text(
+                  'VIEW FEATURE',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppType.mono(
+                    context,
+                    size: 11,
+                    weight: FontWeight.w600,
+                    color: pal.ink,
+                    letterSpacing: 1.6,
+                  ),
                 ),
               ),
               const SizedBox(width: 8),
               AnimatedRotation(
                 turns: hovered ? 0.125 : 0,
                 duration: const Duration(milliseconds: 200),
-                child: const Icon(
-                  Icons.arrow_forward,
-                  size: 20,
-                  color: AppColors.ink,
-                ),
+                child: Icon(Icons.arrow_forward, size: 20, color: pal.ink),
               ),
             ],
           ),
@@ -264,8 +255,9 @@ class _MediaPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pal = context.palette;
     return ClipRRect(
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(Radii.card),
       child: Stack(
         fit: StackFit.expand,
         children: [
@@ -275,8 +267,8 @@ class _MediaPanel extends StatelessWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  accent.withValues(alpha: 0.16),
-                  accent.withValues(alpha: 0.05),
+                  accent.withValues(alpha: 0.20),
+                  accent.withValues(alpha: 0.06),
                 ],
               ),
             ),
@@ -318,27 +310,24 @@ class _MediaPanel extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.5),
-                borderRadius: BorderRadius.circular(50),
-                border: Border.all(color: AppColors.strokeStrong),
+                color: pal.ink,
+                borderRadius: BorderRadius.circular(Radii.chip),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'View',
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.ink,
+                    'VIEW',
+                    style: AppType.mono(
+                      context,
+                      size: 9.5,
+                      weight: FontWeight.w600,
+                      color: pal.paper,
+                      letterSpacing: 1.4,
                     ),
                   ),
-                  const SizedBox(width: 4),
-                  const Icon(
-                    Icons.arrow_outward_rounded,
-                    size: 14,
-                    color: AppColors.ink,
-                  ),
+                  const SizedBox(width: 5),
+                  Icon(Icons.arrow_outward_rounded, size: 12, color: pal.paper),
                 ],
               ),
             ),
@@ -356,8 +345,9 @@ class _CardFooter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = Color(
-      int.parse(feature.accentColor.replaceFirst('#', '0xFF')),
+    final pal = context.palette;
+    final accent = pal.liftAccent(
+      Color(int.parse(feature.accentColor.replaceFirst('#', '0xFF'))),
     );
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 4, 20, 22),
@@ -377,21 +367,19 @@ class _CardFooter extends StatelessWidget {
                       feature.name,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.ink,
-                      ),
+                      style: AppType.display(context, size: 24, height: 1.1),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 4),
                     Text(
-                      feature.context,
+                      feature.context.toUpperCase(),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
+                      style: AppType.mono(
+                        context,
+                        size: 9.5,
+                        weight: FontWeight.w600,
                         color: accent,
+                        letterSpacing: 1.4,
                       ),
                     ),
                   ],
@@ -400,11 +388,7 @@ class _CardFooter extends StatelessWidget {
               AnimatedRotation(
                 turns: hovered ? 0.125 : 0,
                 duration: const Duration(milliseconds: 200),
-                child: const Icon(
-                  Icons.arrow_forward,
-                  size: 20,
-                  color: AppColors.ink,
-                ),
+                child: Icon(Icons.arrow_forward, size: 20, color: pal.ink),
               ),
             ],
           ),
@@ -413,11 +397,7 @@ class _CardFooter extends StatelessWidget {
             feature.shortDescription,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.inter(
-              fontSize: 14,
-              color: AppColors.inkLight,
-              height: 1.45,
-            ),
+            style: AppType.ui(context, size: 14, height: 1.5),
           ),
         ],
       ),
@@ -431,16 +411,17 @@ class _AppIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = Color(int.parse(color.replaceFirst('#', '0xFF')));
+    final pal = context.palette;
+    final c = pal.liftAccent(Color(int.parse(color.replaceFirst('#', '0xFF'))));
     return Container(
       width: 46,
       height: 46,
       decoration: BoxDecoration(
-        color: c.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: c.withValues(alpha: 0.3), width: 1.5),
+        color: c.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(Radii.inset),
+        border: Border.all(color: c.withValues(alpha: 0.35)),
       ),
-      child: Icon(Icons.auto_awesome_rounded, color: c, size: 22),
+      child: Icon(Icons.auto_awesome_rounded, color: c, size: 21),
     );
   }
 }
@@ -452,19 +433,22 @@ class _TechChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pal = context.palette;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: subtle ? 0.05 : 0.08),
-        borderRadius: BorderRadius.circular(50),
-        border: Border.all(color: AppColors.stroke),
+        color: subtle ? Colors.transparent : pal.paperRaised,
+        borderRadius: BorderRadius.circular(Radii.chip),
+        border: Border.all(color: pal.ruleStrong),
       ),
       child: Text(
-        label,
-        style: GoogleFonts.inter(
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
-          color: AppColors.ink,
+        label.toUpperCase(),
+        style: AppType.mono(
+          context,
+          size: 9.5,
+          weight: FontWeight.w600,
+          color: pal.inkLight,
+          letterSpacing: 1.1,
         ),
       ),
     );

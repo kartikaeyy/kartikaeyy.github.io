@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../data/portfolio_data.dart';
@@ -16,9 +15,10 @@ class ChatPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pal = context.palette;
     final isMobile = Breaks.isMobile(context);
     return Container(
-      color: AppColors.background,
+      color: pal.background,
       child: ContentFrame(
         maxWidth: 900,
         child: Column(
@@ -48,10 +48,11 @@ class ChatPage extends StatelessWidget {
                   'Email is the fastest way to reach me. Happy to talk Flutter, '
                   'product detail or open source.',
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(
-                    fontSize: isMobile ? 15 : 16.5,
-                    color: AppColors.inkLight,
-                    height: 1.7,
+                  style: AppType.ui(
+                    context,
+                    size: isMobile ? 15 : 16.5,
+                    color: pal.inkLight,
+                    height: 1.75,
                   ),
                 ),
               ),
@@ -74,8 +75,9 @@ class ChatPage extends StatelessWidget {
 }
 
 /// The page's one loud action, plus a quiet way to grab the address without
-/// leaving the site. The old version was a single 300px glowing slab whose only
-/// label was "Connect".
+/// leaving the site. On paper the CTA earns its weight from the vermillion
+/// block printed behind it rather than from a glow, so there is nothing left
+/// here to animate — the button handles its own register shift on hover.
 class _PrimaryContactActions extends StatelessWidget {
   const _PrimaryContactActions();
 
@@ -83,61 +85,17 @@ class _PrimaryContactActions extends StatelessWidget {
   Widget build(BuildContext context) {
     return Wrap(
       alignment: WrapAlignment.center,
-      spacing: 14,
+      spacing: 16,
       runSpacing: 14,
       children: [
-        _PulseGlow(
-          child: ActionButton(
-            label: 'Say hello',
-            icon: Icons.arrow_outward_rounded,
-            onPressed: () => launchUrl(Uri.parse('mailto:$kEmail')),
-            tooltip: kEmail,
-          ),
+        ActionButton(
+          label: 'Say hello',
+          icon: Icons.arrow_outward_rounded,
+          onPressed: () => launchUrl(Uri.parse('mailto:$kEmail')),
+          tooltip: kEmail,
         ),
         const _CopyEmailButton(),
       ],
-    );
-  }
-}
-
-/// Slow breathing bloom behind the primary CTA — keeps the signature glow from
-/// the first design without letting it swallow the layout.
-class _PulseGlow extends StatefulWidget {
-  final Widget child;
-  const _PulseGlow({required this.child});
-
-  @override
-  State<_PulseGlow> createState() => _PulseGlowState();
-}
-
-class _PulseGlowState extends State<_PulseGlow>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 2400),
-  )..repeat(reverse: true);
-
-  late final Animation<double> _pulse = CurvedAnimation(
-    parent: _controller,
-    curve: Curves.easeInOut,
-  );
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _pulse,
-      builder: (context, child) => Bloom(
-        intensity: 0.65 + 0.5 * _pulse.value,
-        radius: Radii.chip,
-        child: child!,
-      ),
-      child: widget.child,
     );
   }
 }
@@ -218,7 +176,7 @@ class _ContactCard extends StatelessWidget {
       ),
     ];
 
-    return GlassPanel(
+    return PaperPanel(
       padding: EdgeInsets.all(isMobile ? 14 : 18),
       child: LayoutBuilder(
         builder: (context, constraints) {
@@ -287,6 +245,7 @@ class _ChannelRowState extends State<_ChannelRow> {
 
   @override
   Widget build(BuildContext context) {
+    final pal = context.palette;
     final c = widget.channel;
     return Pressable(
       onPressed: () => launchUrl(Uri.parse(c.url)),
@@ -296,13 +255,12 @@ class _ChannelRowState extends State<_ChannelRow> {
         curve: Motion.curve,
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: hovered ? 0.07 : 0.025),
-          borderRadius: BorderRadius.circular(16),
+          color: hovered ? pal.paperRaised : pal.wash(0.02),
+          borderRadius: BorderRadius.circular(Radii.card),
           border: Border.all(
-            color: focused
-                ? AppColors.heroYellow.withValues(alpha: 0.7)
-                : (hovered ? AppColors.strokeStrong : AppColors.stroke),
+            color: focused ? pal.accent : (hovered ? pal.ruleStrong : pal.rule),
           ),
+          boxShadow: hovered ? pal.restShadow : null,
         ),
         child: Row(
           children: [
@@ -312,18 +270,14 @@ class _ChannelRowState extends State<_ChannelRow> {
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: hovered
-                    ? AppColors.heroYellow.withValues(alpha: 0.16)
-                    : Colors.white.withValues(alpha: 0.05),
+                color: hovered ? pal.accent : pal.paper,
                 border: Border.all(
-                  color: hovered
-                      ? AppColors.heroYellow.withValues(alpha: 0.35)
-                      : AppColors.stroke,
+                  color: hovered ? pal.accent : pal.ruleStrong,
                 ),
               ),
               child: c.icon.build(
                 size: 17,
-                color: hovered ? AppColors.heroYellow : AppColors.ink,
+                color: hovered ? pal.paper : pal.ink,
               ),
             ),
             const SizedBox(width: 12),
@@ -334,22 +288,19 @@ class _ChannelRowState extends State<_ChannelRow> {
                 children: [
                   Text(
                     c.label.toUpperCase(),
-                    style: GoogleFonts.inter(
-                      fontSize: 10.5,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1.3,
-                      color: AppColors.inkFaint,
-                    ),
+                    style: AppType.mono(context, size: 10, letterSpacing: 1.5),
                   ),
                   const SizedBox(height: 3),
                   Text(
                     _copied ? 'Copied to clipboard' : c.value,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: _copied ? AppColors.live : AppColors.ink,
+                    style: AppType.ui(
+                      context,
+                      size: 14,
+                      weight: FontWeight.w500,
+                      color: _copied ? pal.live : pal.ink,
+                      height: 1.3,
                     ),
                   ),
                 ],
@@ -372,7 +323,7 @@ class _ChannelRowState extends State<_ChannelRow> {
                 child: Icon(
                   Icons.arrow_outward_rounded,
                   size: 18,
-                  color: hovered ? AppColors.heroYellow : AppColors.inkFaint,
+                  color: hovered ? pal.accent : pal.inkFaint,
                 ),
               ),
           ],
