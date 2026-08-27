@@ -47,8 +47,6 @@ class HeyPage extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Expanded(flex: 7, child: _HeroContent()),
-                          SizedBox(width: 64),
-                          Expanded(flex: 4, child: _Colophon()),
                         ],
                       )
                     : const _HeroContent(),
@@ -127,9 +125,8 @@ class _HeroContent extends StatelessWidget {
           constraints: const BoxConstraints(maxWidth: Layout.maxProse),
           child:
               Text(
-                    'Flutter developer shipping cross-platform apps for iOS and '
-                    'Android — onboarding revamps, app-wide localization and the '
-                    'kind of animation detail you feel more than you notice.',
+                    'Mobile developer shipping cross platform apps for iOS and '
+                    'Android. Love to build beautiful and functional apps that people love to use.',
                     style: AppType.ui(
                       context,
                       size: isMobile ? 15 : 16.5,
@@ -262,93 +259,6 @@ class _HeroStats extends StatelessWidget {
   }
 }
 
-/// The masthead's facing column: the facts a recruiter scans for, set as a
-/// colophon. Every row is computed from the portfolio data, so there is nothing
-/// here to keep in sync by hand.
-class _Colophon extends StatelessWidget {
-  const _Colophon();
-
-  @override
-  Widget build(BuildContext context) {
-    final pal = context.palette;
-    final current = kExperiences.first;
-    final companies = kExperiences.map((e) => e.company).join(' · ');
-    final rows = <(String, String)>[
-      ('Currently', '${current.role}\n${current.company}'),
-      ('Shipped', '${kFeatures.length.toString().padLeft(2, '0')} features'),
-      ('Worked at', companies),
-      ('Toolkit', '${kSkills.length} tools · ${kSkills.take(2).join(", ")}'),
-      ('Studying', '${kEducation.degree}\nGraduating ${kEducation.period}'),
-    ];
-
-    return Container(
-          padding: const EdgeInsets.fromLTRB(24, 22, 24, 8),
-          decoration: BoxDecoration(
-            color: pal.paperRaised.withValues(alpha: 0.7),
-            borderRadius: BorderRadius.circular(Radii.panel),
-            border: Border.all(color: pal.rule),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Eyebrow(label: 'Colophon'),
-              const SizedBox(height: Space.md),
-              for (final (label, value) in rows)
-                _ColophonRow(label: label, value: value),
-            ],
-          ),
-        )
-        .animate()
-        .fadeIn(delay: 640.ms, duration: 700.ms)
-        .slideY(begin: 0.12, end: 0, curve: Motion.curve);
-  }
-}
-
-class _ColophonRow extends StatelessWidget {
-  final String label;
-  final String value;
-
-  const _ColophonRow({required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    final pal = context.palette;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const HairRule(),
-          const SizedBox(height: 10),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                width: 86,
-                child: Text(
-                  label.toUpperCase(),
-                  style: AppType.mono(context, size: 9.5, letterSpacing: 1.3),
-                ),
-              ),
-              Expanded(
-                child: Text(
-                  value,
-                  style: AppType.ui(
-                    context,
-                    size: 13.5,
-                    weight: FontWeight.w500,
-                    color: pal.ink,
-                    height: 1.45,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 /// Bottom-of-hero affordance: tells the visitor there is more, and takes them
 /// there when clicked.

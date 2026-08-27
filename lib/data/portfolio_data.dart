@@ -238,14 +238,31 @@ const kExperiences = [
         'localization while resolving production issues.',
     highlights: [
       'Revamped the onboarding flow end to end, from Splash to Home page',
-      'Led app-wide localization for Hindi & Bengali with in-app language switching',
-      'Built a cross-page Product Recommendation Rail across Home, Search & Category',
-      'Added Google Phone Number Hint to Android (native) onboarding, removing manual entry at signup.',
-      'Rebuilt the GPS & location-permission flow for iOS/Android with denial & fallback states',
-      'Optimized the Google Places integration, cutting per-request API billing & payload size',
-      'Resolved production issues across payments, cart logic, Crashlytics, app size & UI overflow',
-      'Implemented edge to edge system UI styling with safe area handling for bottom sheets and keyboard layouts.',
-      'Built multi phase UI animations with AnimationControllers for recommendation rails entrance, auto scrolling carousels, and scale transitions for offer prices.',
+      'Built a config-gated floating offer nudge banner on cart items to surface '
+          'offer visibility',
+      'Made force/soft app-update dialogs server driven (heading, description, '
+          'remote icon with fallback)',
+      'Standardized currency formatting & rounding logic across cart, offer tags '
+          '& MRP displays',
+      'Added Google Phone Number Hint to Android (native) onboarding, removing '
+          'manual entry at signup',
+      'Optimized the Google Places integration, cutting per-request API billing '
+          '& response payload size',
+      'Built the Welcome Gift feature with a dynamic widget and cart-level logic, '
+          'targeting first-order conversion',
+      'Developed a cross-page Product Recommendation Rail across Home, Search & '
+          'Category pages',
+      'Led app-wide localization for Hindi & Bengali, with in-app language '
+          'switching from the profile page',
+      'Rebuilt the GPS & location-permission flow for iOS/Android, handling '
+          'location, denials & fallback states',
+      'Implemented edge-to-edge system UI styling with safe-area handling for '
+          'bottom sheets and keyboard layouts',
+      'Resolved production issues spanning payment flow, cart logic, monthly '
+          'Crashlytics, app size & UI overflow',
+      'Built multi-phase UI animations with AnimationControllers for '
+          'recommendation rail entrances, auto-scrolling carousels & scale '
+          'transitions for offer prices',
     ],
   ),
   Experience(
@@ -289,16 +306,20 @@ const kSkills = [
   'Dart',
   'Swift',
   'Firebase',
-  'Python',
   'Provider',
   'Bloc',
   'Riverpod',
   'MVVM',
   'Feature First',
   'Git/GitHub',
+  'Clickhouse',
+  'Figma',
+  'Claude Code',
   'Xcode',
   'Android Studio',
   'Linux',
+  'Kotlin',
+  'Android Jetpack',
 ];
 
 const kEmail = 'kartikeyswork@gmail.com';

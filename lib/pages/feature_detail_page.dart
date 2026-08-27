@@ -399,6 +399,7 @@ class _AboutSection extends StatelessWidget {
         const SizedBox(height: 12),
         Text(
           feature.description,
+          textAlign: TextAlign.justify,
           style: AppType.ui(
             context,
             size: 18,
@@ -439,6 +440,7 @@ class _HighlightsSection extends StatelessWidget {
                 Expanded(
                   child: Text(
                     e.value,
+                    textAlign: TextAlign.justify,
                     style: AppType.ui(
                       context,
                       size: 16,

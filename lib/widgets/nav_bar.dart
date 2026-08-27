@@ -1,9 +1,6 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
-
-import '../data/portfolio_data.dart';
 import '../theme/app_theme.dart';
 import '../theme/edition.dart';
 import 'actions.dart';
@@ -138,15 +135,6 @@ class PortfolioNavBar extends StatelessWidget {
                     color: pal.ruleStrong,
                   ),
                   const EditionToggle(),
-                  if (!isMobile) ...[
-                    const SizedBox(width: 4),
-                    IconAction(
-                      icon: const Glyph.material(Icons.mail_outline_rounded),
-                      tooltip: 'Email $kEmail',
-                      size: 34,
-                      onPressed: () => launchUrl(Uri.parse('mailto:$kEmail')),
-                    ),
-                  ],
                   const SizedBox(width: 2),
                 ],
               ),

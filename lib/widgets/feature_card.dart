@@ -154,7 +154,6 @@ class _WideContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final pal = context.palette;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
       child: Column(
@@ -163,8 +162,6 @@ class _WideContent extends StatelessWidget {
         children: [
           Row(
             children: [
-              _AppIcon(color: feature.accentColor),
-              const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -209,31 +206,6 @@ class _WideContent extends StatelessWidget {
                 .toList(),
           ),
           const SizedBox(height: 28),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Flexible(
-                child: Text(
-                  'VIEW FEATURE',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppType.mono(
-                    context,
-                    size: 11,
-                    weight: FontWeight.w600,
-                    color: pal.ink,
-                    letterSpacing: 1.6,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              AnimatedRotation(
-                turns: hovered ? 0.125 : 0,
-                duration: const Duration(milliseconds: 200),
-                child: Icon(Icons.arrow_forward, size: 20, color: pal.ink),
-              ),
-            ],
-          ),
         ],
       ),
     );
