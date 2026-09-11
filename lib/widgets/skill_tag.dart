@@ -57,7 +57,7 @@ class _SkillTagState extends State<SkillTag> {
             const SizedBox(width: 9),
             Text(
               widget.label,
-              style: AppType.mono(
+              style: AppType.label(
                 context,
                 size: 11.5,
                 weight: FontWeight.w500,

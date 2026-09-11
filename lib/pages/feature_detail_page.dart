@@ -14,7 +14,7 @@ class FeatureDetailPage extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
     final accent = pal.liftAccent(
-      Color(int.parse(feature.accentColor.replaceFirst('#', '0xFF'))),
+      Color(int.parse(feature.accentColor.replaceFirst('#', '0xff'))),
     );
 
     // Hero phone frame is sized by width so it tracks the viewport instead of
@@ -133,8 +133,12 @@ class _HeroBannerState extends State<_HeroBanner> {
         .toList();
 
     // Loop through the frames so a swipe always rotates a side frame to front.
+    // Ten laps either way, not thousands: the scroll extent is the item extent
+    // times the item count, and a very long run of fractional-width pages
+    // drifts far enough in floating point to trip the sliver's own
+    // "even multiple of itemExtent" assertion.
     final looping = items.length > 1;
-    final base = looping ? items.length * 1000 : 0;
+    final base = looping ? items.length * 10 : 0;
 
     return Stack(
       fit: StackFit.expand,
@@ -192,7 +196,7 @@ class _HeroBannerState extends State<_HeroBanner> {
                           child: PageView.builder(
                             controller: controller,
                             itemCount: looping
-                                ? items.length * 2000
+                                ? items.length * 20
                                 : items.length,
                             onPageChanged: (i) =>
                                 setState(() => _page = i % items.length),
@@ -243,9 +247,9 @@ class _HeroBannerState extends State<_HeroBanner> {
               ),
               const SizedBox(height: 6),
               Text(
-                feature.context.toUpperCase(),
+                feature.context.toLowerCase(),
                 textAlign: TextAlign.center,
-                style: AppType.mono(
+                style: AppType.label(
                   context,
                   size: 10.5,
                   weight: FontWeight.w600,
@@ -280,19 +284,8 @@ class _HeroBannerState extends State<_HeroBanner> {
     return frame;
   }
 
-  void _openViewer(List<String> shots, int index) {
-    if (shots.isEmpty) return;
-    Navigator.of(context).push(
-      PageRouteBuilder(
-        opaque: false,
-        barrierColor: Colors.black87,
-        pageBuilder: (_, _, _) =>
-            _GalleryViewer(shots: shots, initialIndex: index < 0 ? 0 : index),
-        transitionsBuilder: (_, animation, _, child) =>
-            FadeTransition(opacity: animation, child: child),
-      ),
-    );
-  }
+  void _openViewer(List<String> shots, int index) =>
+      openGallery(context, shots, index);
 }
 
 /// Page-dot indicator for the swipeable hero frames.
@@ -395,7 +388,7 @@ class _AboutSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _SectionLabel('Overview'),
+        const _SectionLabel('overview'),
         const SizedBox(height: 12),
         Text(
           feature.description,
@@ -423,7 +416,7 @@ class _HighlightsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _SectionLabel('What it does'),
+        const _SectionLabel('what it does'),
         const SizedBox(height: 16),
         ...feature.highlights.asMap().entries.map(
           (e) => Padding(
@@ -469,7 +462,7 @@ class _TechSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _SectionLabel('Tech Stack'),
+        const _SectionLabel('tech stack'),
         const SizedBox(height: 12),
         Wrap(
           spacing: 8,
@@ -487,8 +480,8 @@ class _TechSection extends StatelessWidget {
                     border: Border.all(color: accent.withValues(alpha: 0.35)),
                   ),
                   child: Text(
-                    t.toUpperCase(),
-                    style: AppType.mono(
+                    t.toLowerCase(),
+                    style: AppType.label(
                       context,
                       size: 10,
                       weight: FontWeight.w600,
@@ -513,58 +506,4 @@ class _SectionLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Eyebrow(label: text);
-}
-
-/// Full-screen swipeable screenshot viewer.
-class _GalleryViewer extends StatelessWidget {
-  final List<String> shots;
-  final int initialIndex;
-  const _GalleryViewer({required this.shots, required this.initialIndex});
-
-  @override
-  Widget build(BuildContext context) {
-    final pal = context.palette;
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Stack(
-        children: [
-          PageView.builder(
-            controller: PageController(initialPage: initialIndex),
-            itemCount: shots.length,
-            itemBuilder: (context, index) => Center(
-              child: Padding(
-                padding: const EdgeInsets.all(32),
-                child: InteractiveViewer(
-                  child: MediaView(
-                    image: shots[index],
-                    accent: pal.inkLight,
-                    fit: BoxFit.contain,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            top: 48,
-            right: 24,
-            child: GestureDetector(
-              onTap: () => Navigator.pop(context),
-              child: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: const BoxDecoration(
-                  color: Color(0xFFF3F0E9),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.close,
-                  color: Color(0xFF15130F),
-                  size: 24,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }

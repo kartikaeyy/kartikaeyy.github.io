@@ -5,7 +5,9 @@ import '../theme/app_theme.dart';
 import '../widgets/experience_timeline.dart';
 import '../widgets/feature_card.dart';
 import '../widgets/media.dart';
+import '../widgets/post_card.dart';
 import 'feature_detail_page.dart';
+import 'post_detail_page.dart';
 
 class WorkPage extends StatefulWidget {
   const WorkPage({super.key});
@@ -73,7 +75,7 @@ class _WorkPageState extends State<WorkPage> {
             padding: sidePadding,
             child: _Controls(
               currentPage: _currentPage,
-              total: kFeatures.length,
+              total: kWorkItems.length,
               isMobile: isMobile,
               onPrev: () => _goTo(_currentPage - 1),
               onNext: () => _goTo(_currentPage + 1),
@@ -98,11 +100,11 @@ class _SectionHeading extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Eyebrow(
-          label: 'Selected work',
+          label: 'selected work',
         ).animate().fadeIn(duration: 500.ms),
         const SizedBox(height: Space.md),
         Text(
-          'My Work',
+          'my work',
           style: AppType.display(
             context,
             size: isMobile ? 52 : 88,
@@ -111,7 +113,7 @@ class _SectionHeading extends StatelessWidget {
         ).animate().fadeIn(duration: 600.ms).slideY(begin: 0.2, end: 0),
         const SizedBox(height: 12),
         Text(
-          'Features I built, shipped & shaped',
+          'features i built, shipped & shaped',
           style: AppType.ui(context, size: isMobile ? 16 : 18),
         ).animate().fadeIn(delay: 200.ms, duration: 600.ms),
       ],
@@ -149,7 +151,7 @@ class _Carousel extends StatelessWidget {
       height: cardHeight,
       child: PageView.builder(
         controller: pageController,
-        itemCount: kFeatures.length,
+        itemCount: kWorkItems.length,
         padEnds: true,
         itemBuilder: (context, index) {
           return AnimatedBuilder(
@@ -171,21 +173,45 @@ class _Carousel extends StatelessWidget {
             },
             child: Padding(
               padding: const EdgeInsets.only(right: 16),
-              child: FeatureCard(
-                feature: kFeatures[index],
-                onTap: () {
-                  if (index == currentPage) {
-                    _openDetail(context, kFeatures[index]);
-                  } else {
-                    onTap(index);
-                  }
-                },
+              child: _WorkCard(
+                item: kWorkItems[index],
+                onSelect: index == currentPage ? null : () => onTap(index),
               ),
             ),
           );
         },
       ),
     ).animate().fadeIn(delay: 300.ms, duration: 600.ms);
+  }
+}
+
+/// Picks the right card for whatever sits at this slot in [kWorkItems] — a
+/// phone-framed [FeatureCard] or an image-and-text [PostCard] — and opens the
+/// page that belongs to it.
+///
+/// An off-centre card doesn't open anything: the first tap brings it to the
+/// middle of the carousel ([onSelect]), and only the centred card acts.
+class _WorkCard extends StatelessWidget {
+  final WorkItem item;
+  final VoidCallback? onSelect;
+
+  const _WorkCard({required this.item, this.onSelect});
+
+  @override
+  Widget build(BuildContext context) {
+    final item = this.item;
+    if (item is Feature) {
+      return FeatureCard(
+        feature: item,
+        onTap:
+            onSelect ?? () => _open(context, FeatureDetailPage(feature: item)),
+      );
+    }
+    final post = item as Post;
+    return PostCard(
+      post: post,
+      onTap: onSelect ?? () => _open(context, PostDetailPage(post: post)),
+    );
   }
 }
 
@@ -232,11 +258,12 @@ class _Controls extends StatelessWidget {
   }
 }
 
-void _openDetail(BuildContext context, Feature feature) {
+/// Both detail pages arrive the same way — a short fade up, so leaving the
+/// carousel feels like turning a page rather than a hard cut.
+void _open(BuildContext context, Widget page) {
   Navigator.of(context).push(
     PageRouteBuilder(
-      pageBuilder: (context, animation, secondaryAnimation) =>
-          FeatureDetailPage(feature: feature),
+      pageBuilder: (context, animation, secondaryAnimation) => page,
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         return FadeTransition(
           opacity: animation,

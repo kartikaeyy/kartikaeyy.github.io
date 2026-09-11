@@ -20,7 +20,7 @@ class _FeatureCardState extends State<FeatureCard> {
   Widget build(BuildContext context) {
     final pal = context.palette;
     final accent = pal.liftAccent(
-      Color(int.parse(widget.feature.accentColor.replaceFirst('#', '0xFF'))),
+      Color(int.parse(widget.feature.accentColor.replaceFirst('#', '0xff'))),
     );
     return MouseRegion(
       onEnter: (_) => setState(() => _hovered = true),
@@ -174,10 +174,10 @@ class _WideContent extends StatelessWidget {
                     ),
                     const SizedBox(height: 5),
                     Text(
-                      feature.context.toUpperCase(),
+                      feature.context.toLowerCase(),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: AppType.mono(
+                      style: AppType.label(
                         context,
                         size: 10.5,
                         weight: FontWeight.w600,
@@ -289,8 +289,8 @@ class _MediaPanel extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'VIEW',
-                    style: AppType.mono(
+                    'view',
+                    style: AppType.label(
                       context,
                       size: 9.5,
                       weight: FontWeight.w600,
@@ -319,7 +319,7 @@ class _CardFooter extends StatelessWidget {
   Widget build(BuildContext context) {
     final pal = context.palette;
     final accent = pal.liftAccent(
-      Color(int.parse(feature.accentColor.replaceFirst('#', '0xFF'))),
+      Color(int.parse(feature.accentColor.replaceFirst('#', '0xff'))),
     );
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 4, 20, 22),
@@ -343,10 +343,10 @@ class _CardFooter extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      feature.context.toUpperCase(),
+                      feature.context.toLowerCase(),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: AppType.mono(
+                      style: AppType.label(
                         context,
                         size: 9.5,
                         weight: FontWeight.w600,
@@ -384,7 +384,7 @@ class _AppIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final pal = context.palette;
-    final c = pal.liftAccent(Color(int.parse(color.replaceFirst('#', '0xFF'))));
+    final c = pal.liftAccent(Color(int.parse(color.replaceFirst('#', '0xff'))));
     return Container(
       width: 46,
       height: 46,
@@ -414,8 +414,8 @@ class _TechChip extends StatelessWidget {
         border: Border.all(color: pal.ruleStrong),
       ),
       child: Text(
-        label.toUpperCase(),
-        style: AppType.mono(
+        label.toLowerCase(),
+        style: AppType.label(
           context,
           size: 9.5,
           weight: FontWeight.w600,

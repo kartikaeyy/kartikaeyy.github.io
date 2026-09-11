@@ -320,8 +320,8 @@ class _MediaFallback extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             Text(
-              'MEDIA COMING SOON',
-              style: AppType.mono(
+              'media coming soon',
+              style: AppType.label(
                 context,
                 size: 9.5,
                 weight: FontWeight.w600,
@@ -331,6 +331,80 @@ class _MediaFallback extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Opens [shots] full-screen, starting on [index] — the shared lightbox behind
+/// both the detail-page gallery and the image cards in the work carousel.
+void openGallery(BuildContext context, List<String> shots, int index) {
+  if (shots.isEmpty) return;
+  Navigator.of(context).push(
+    PageRouteBuilder(
+      opaque: false,
+      barrierColor: Colors.black87,
+      pageBuilder: (_, _, _) =>
+          GalleryViewer(shots: shots, initialIndex: index < 0 ? 0 : index),
+      transitionsBuilder: (_, animation, _, child) =>
+          FadeTransition(opacity: animation, child: child),
+    ),
+  );
+}
+
+/// Full-screen swipeable screenshot viewer.
+class GalleryViewer extends StatelessWidget {
+  final List<String> shots;
+  final int initialIndex;
+  const GalleryViewer({
+    super.key,
+    required this.shots,
+    required this.initialIndex,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final pal = context.palette;
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Stack(
+        children: [
+          PageView.builder(
+            controller: PageController(initialPage: initialIndex),
+            itemCount: shots.length,
+            itemBuilder: (context, index) => Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: InteractiveViewer(
+                  child: MediaView(
+                    image: shots[index],
+                    accent: pal.inkLight,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 48,
+            right: 24,
+            child: GestureDetector(
+              onTap: () => Navigator.pop(context),
+              child: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFF3F0E9),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.close,
+                  color: Color(0xFF15130F),
+                  size: 24,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

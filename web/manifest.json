@@ -1,11 +1,11 @@
 {
-    "name": "Kartikey Srivastava \u2014 Flutter Developer",
-    "short_name": "Kartikey",
+    "name": "kartikey srivastava \u2014 flutter developer",
+    "short_name": "kartikey",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#F3F0E9",
     "theme_color": "#F3F0E9",
-    "description": "Kartikey Srivastava \u2014 Flutter developer shipping cross-platform apps for iOS and Android.",
+    "description": "kartikey srivastava \u2014 flutter developer shipping cross-platform apps for ios and android.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

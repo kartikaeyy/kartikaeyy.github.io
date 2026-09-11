@@ -66,9 +66,9 @@ class _StoryHeader extends StatelessWidget {
     return const Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Eyebrow(label: 'About me'),
+        Eyebrow(label: 'about me'),
         SizedBox(height: Space.md),
-        SectionTitle('My Story'),
+        SectionTitle('my story'),
       ],
     );
   }
@@ -94,36 +94,30 @@ class _Bio extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // The one line of the page that is allowed to be a pull quote: set
-          // in the display italic and hung off a vermillion rule.
+          // in the display register and hung off a vermillion rule. It stays
+          // ragged — a single line has nothing to justify against.
           Container(
             padding: const EdgeInsets.only(left: 18),
             decoration: BoxDecoration(
               border: Border(left: BorderSide(color: pal.vermillion, width: 2)),
             ),
             child: Text(
-              "I don't have dark secrets, only bright ones.",
+              "always hungry to learn",
               style: AppType.display(
                 context,
                 size: isMobile ? 24 : 30,
+                weight: FontWeight.w500,
                 height: 1.25,
-                fontStyle: FontStyle.italic,
               ),
             ),
           ),
           const SizedBox(height: Space.lg),
           Text(
-            "I'm a Flutter developer and final-year CS student at JUIT, shipping "
-            'cross-platform apps that feel great on both iOS and Android. From '
-            'revamped onboarding flows to app-wide localization, I care deeply '
-            'about every detail that makes an app a pleasure to use.',
-            style: body,
-          ),
-          SizedBox(height: Space.sm),
-          Text(
-            "I'm currently a Flutter Intern at Apna Mart, and have built features "
-            "at Ente and Imagined. When I'm not writing Dart, I'm contributing to "
-            "open source — from CCExtractor's Ultimate Alarm Clock to the "
-            'encrypted photo app at Ente.',
+            "i didn’t get into mobile development just to learn another framework—i got into it because i wanted to see an idea turn into something i could actually hold, tap, and use. that curiosity led me to flutter, where i started building projects like the **juit mess app**, a simple but practical app that used firebase realtime database to deliver daily meal updates and made navigating weekly schedules intuitive through a calendar and slider. projects like this helped me move beyond tutorials and understand what it actually takes to build something useful—from designing interfaces and managing state to working with real-time data and thinking about the experience of the person using it. as i took on more projects and real-world development, my focus gradually shifted from simply making an app work to understanding how and why it works. flutter gave me a strong foundation in dart, ui development, apis, state management, and architecture, but it also sparked a new curiosity: what happens underneath the framework? that question led me toward native android development with kotlin, xml, and jetpack compose. today, i’m exploring mobile development from both sides—using flutter to build efficiently across platforms while learning native android to understand the platform more deeply. it’s still a work in progress, but that’s what makes the journey exciting: every project has taught me something new, and every new layer i discover changes the way i build the next one.",
+            // Justified, like the prose on the feature pages: the bio runs to
+            // a full measure, and a flush edge is what makes it read as a
+            // column of type rather than a caption that got long.
+            textAlign: TextAlign.justify,
             style: body,
           ),
         ],
@@ -155,7 +149,7 @@ class _Collage extends StatelessWidget {
               top: 0,
               child: _Polaroid(
                 icon: Icons.phone_iphone_rounded,
-                caption: 'Building cool stuff',
+                caption: 'building cool stuff',
                 rotation: -7,
                 tint: pal.accent,
               ),
@@ -165,7 +159,7 @@ class _Collage extends StatelessWidget {
               top: 22,
               child: _Polaroid(
                 icon: Icons.rocket_launch_rounded,
-                caption: 'Shipping features',
+                caption: 'shipping features',
                 rotation: 6,
                 tint: pal.vermillion,
               ),
@@ -175,7 +169,7 @@ class _Collage extends StatelessWidget {
               top: 202,
               child: _Polaroid(
                 icon: Icons.local_cafe_rounded,
-                caption: 'Fuelled by coffee',
+                caption: 'fuelled by coffee',
                 rotation: 3,
                 tint: pal.live,
               ),
@@ -257,8 +251,8 @@ class _PolaroidState extends State<_Polaroid> {
                 style: AppType.display(
                   context,
                   size: 15,
+                  weight: FontWeight.w500,
                   height: 1.2,
-                  fontStyle: FontStyle.italic,
                   letterSpacing: 0,
                 ),
                 textAlign: TextAlign.center,
@@ -292,10 +286,10 @@ class _Toolkit extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Eyebrow(label: 'Toolkit'),
+                    const Eyebrow(label: 'toolkit'),
                     const SizedBox(height: Space.sm),
                     Text(
-                      'What I build with',
+                      'what i build with',
                       style: AppType.display(
                         context,
                         size: isMobile ? 28 : 36,
@@ -308,7 +302,7 @@ class _Toolkit extends StatelessWidget {
               // A folio number in the corner of the sheet.
               Text(
                 kSkills.length.toString().padLeft(2, '0'),
-                style: AppType.mono(
+                style: AppType.label(
                   context,
                   size: isMobile ? 13 : 15,
                   weight: FontWeight.w600,
@@ -348,9 +342,9 @@ class _EducationSection extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Eyebrow(label: 'Studies'),
+              Eyebrow(label: 'studies'),
               SizedBox(height: Space.md),
-              SectionTitle('Education', minSize: 34, maxSize: 56),
+              SectionTitle('education', minSize: 34, maxSize: 56),
             ],
           ),
         ),

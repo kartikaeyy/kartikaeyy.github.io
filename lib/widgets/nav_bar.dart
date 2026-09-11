@@ -2,7 +2,6 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
-import '../theme/edition.dart';
 import 'actions.dart';
 
 /// Floating masthead. Every breakpoint gets the same segmented pill with an
@@ -25,13 +24,13 @@ class PortfolioNavBar extends StatelessWidget {
     this.elevated = false,
   });
 
-  static const labels = ['Hey', 'Work', 'Story', 'Chat'];
+  static const labels = ['hey', 'work', 'story', 'chat'];
 
   @override
   Widget build(BuildContext context) {
     final pal = context.palette;
     final hPad = isMobile ? 13.0 : 20.0;
-    final labelStyle = AppType.mono(
+    final labelStyle = AppType.label(
       context,
       size: isMobile ? 11.5 : 12,
       weight: FontWeight.w600,
@@ -42,7 +41,7 @@ class PortfolioNavBar extends StatelessWidget {
     var widest = 0.0;
     for (final l in labels) {
       final tp = TextPainter(
-        text: TextSpan(text: l.toUpperCase(), style: labelStyle),
+        text: TextSpan(text: l.toLowerCase(), style: labelStyle),
         textDirection: TextDirection.ltr,
       )..layout();
       widest = widest > tp.width ? widest : tp.width;
@@ -53,15 +52,9 @@ class PortfolioNavBar extends StatelessWidget {
         final available = constraints.maxWidth.isFinite
             ? constraints.maxWidth
             : MediaQuery.sizeOf(context).width;
-        // Room held to the right of the tabs for the rule, the edition toggle
-        // and — on desktop — the mail shortcut. Taking it out of the budget
-        // before the tabs are measured is what keeps the pill on screen once
-        // the toggle joins it on a narrow phone.
-        final trailingWidth = isMobile ? 53.0 : 95.0;
         // Never let the pill run past the screen on small phones.
         final maxTab =
-            (available - 2 * Layout.sidePad(context) - 12 - trailingWidth) /
-            labels.length;
+            (available - 2 * Layout.sidePad(context) - 12) / labels.length;
         final tabWidth = (widest + hPad * 2).clamp(
           56.0,
           maxTab.clamp(56.0, 200.0),
@@ -128,14 +121,6 @@ class PortfolioNavBar extends StatelessWidget {
                       ],
                     ),
                   ),
-                  Container(
-                    width: 1,
-                    height: 22,
-                    margin: const EdgeInsets.symmetric(horizontal: 8),
-                    color: pal.ruleStrong,
-                  ),
-                  const EditionToggle(),
-                  const SizedBox(width: 2),
                 ],
               ),
             ),
@@ -199,86 +184,9 @@ class _NavTab extends StatelessWidget {
                 height: 1,
                 color: active ? pal.paper : (hovered ? pal.ink : pal.inkLight),
               ),
-              child: Text(label.toUpperCase(), textAlign: TextAlign.center),
+              child: Text(label.toLowerCase(), textAlign: TextAlign.center),
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Switches between the two editions.
-///
-/// Rather than a sun and a moon, the mark is the amount of ink on the page: an
-/// empty ring for the paper edition, filling to a solid disc as the night one
-/// comes in. The fill runs on the same clock as the palette cross-fade, so the
-/// control and the page turn together.
-class EditionToggle extends StatelessWidget {
-  final double size;
-
-  const EditionToggle({super.key, this.size = 34});
-
-  static const _markSize = 15.0;
-
-  @override
-  Widget build(BuildContext context) {
-    final pal = context.palette;
-    final dark = pal.isDark;
-    final label = dark
-        ? 'Switch to the paper edition'
-        : 'Switch to the night edition';
-
-    return Pressable(
-      onPressed: Edition.of(context).toggle,
-      tooltip: label,
-      semanticLabel: label,
-      builder: (context, hovered, focused) => AnimatedContainer(
-        duration: Motion.fast,
-        curve: Motion.curve,
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: hovered ? pal.paperWhite : Colors.transparent,
-          border: Border.all(
-            color: focused
-                ? pal.accent
-                : (hovered ? pal.ruleStrong : Colors.transparent),
-            width: focused ? 2 : 1,
-          ),
-        ),
-        child: Center(
-          child: SizedBox(
-            width: _markSize,
-            height: _markSize,
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: ClipOval(
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: AnimatedContainer(
-                        duration: Motion.themeSwap,
-                        curve: Motion.emphasized,
-                        width: dark ? _markSize : 0,
-                        height: _markSize,
-                        color: pal.ink,
-                      ),
-                    ),
-                  ),
-                ),
-                Positioned.fill(
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: pal.ink, width: 1.4),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
         ),
       ),
     );

@@ -15,7 +15,6 @@ dependencies:
   flutter_animate: ^4.5.0
   video_player: ^2.9.2
   font_awesome_flutter: ^11.0.0
-  shared_preferences: ^2.5.5
 
 dev_dependencies:
   flutter_test:
@@ -27,4 +26,6 @@ flutter:
   assets:
     - assets/images/
     - assets/images/logos/
+    - assets/images/nutrikit/
     - assets/videos/
+    - assets/resume/

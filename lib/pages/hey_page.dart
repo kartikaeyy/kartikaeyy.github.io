@@ -47,13 +47,15 @@ class HeyPage extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Expanded(flex: 7, child: _HeroContent()),
+                          SizedBox(width: 56),
+                          Expanded(flex: 4, child: _HeroPortrait()),
                         ],
                       )
                     : const _HeroContent(),
               ),
               if (scope != null)
                 Padding(
-                  padding: EdgeInsets.only(bottom: isMobile ? 28 : 40),
+                  padding: EdgeInsets.only(bottom: isMobile ? 28 : 40,top: isMobile ? 32 : 0),
                   child: Center(
                     child: _ScrollCue(
                       onTap: () => scope.goToSection(SectionScope.work),
@@ -68,6 +70,35 @@ class HeyPage extends StatelessWidget {
   }
 }
 
+/// The line under the masthead. Named because the layout has to measure it
+/// before it can paint it.
+const _heroLine = 'crafting apps that people love to use.';
+
+/// Width [text] takes on one line when set in [style].
+double _lineWidth(String text, TextStyle style, TextScaler scaler) {
+  final painter = TextPainter(
+    text: TextSpan(text: text, style: style),
+    textDirection: TextDirection.ltr,
+    textScaler: scaler,
+  )..layout();
+  return painter.width;
+}
+
+/// Height [text] takes when set in [style] to a column [maxWidth] wide.
+double _measure(
+  String text,
+  TextStyle style,
+  double maxWidth,
+  TextScaler scaler,
+) {
+  final painter = TextPainter(
+    text: TextSpan(text: text, style: style),
+    textDirection: TextDirection.ltr,
+    textScaler: scaler,
+  )..layout(maxWidth: math.max(0, maxWidth));
+  return painter.height;
+}
+
 class _HeroContent extends StatelessWidget {
   const _HeroContent();
 
@@ -75,58 +106,163 @@ class _HeroContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final pal = context.palette;
     final isMobile = Breaks.isMobile(context);
+    final isDesktop = Breaks.isDesktop(context);
     final scope = SectionScope.maybeOf(context);
-    final nameSize = Layout.fluid(context, min: 44, max: 98);
+
+    // The surname carries the weight and the given name gives way to it —
+    // one typographic gesture instead of a second colour, which is how a
+    // masthead earns its emphasis on a face with a single width.
+    Widget masthead(double size) =>
+        Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(
+                    text: 'kartikey\n',
+                    style: AppType.display(
+                      context,
+                      size: size,
+                      weight: FontWeight.w500,
+                      height: 0.92,
+                    ),
+                  ),
+                  TextSpan(
+                    text: 'srivastava',
+                    style: AppType.display(
+                      context,
+                      size: size,
+                      weight: FontWeight.w600,
+                      height: 0.92,
+                    ),
+                  ),
+                ],
+              ),
+            )
+            .animate()
+            .fadeIn(delay: 80.ms, duration: 800.ms)
+            .slideY(begin: 0.12, end: 0, curve: Motion.curve);
+
+    final taglineStyle = AppType.ui(
+      context,
+      size: Layout.fluid(context, min: 17, max: 23),
+      weight: FontWeight.w500,
+      color: pal.ink,
+      height: 1.4,
+      letterSpacing: -0.3,
+    );
+    final tagline = Text(_heroLine, style: taglineStyle)
+        .animate()
+        .fadeIn(delay: 220.ms, duration: 600.ms)
+        .slideY(begin: 0.2, end: 0);
+
+    final fullName = Layout.fluid(context, min: 44, max: 98);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const _StatusPill(),
         SizedBox(height: isMobile ? 22 : 28),
-        // The surname drops to italic — one typographic gesture instead of a
-        // second colour, which is how a masthead usually earns its emphasis.
-        Text.rich(
-              TextSpan(
-                children: [
-                  const TextSpan(text: 'Kartikey\n'),
-                  TextSpan(
-                    text: 'Srivastava',
-                    style: AppType.display(
-                      context,
-                      size: nameSize,
-                      height: 0.92,
-                      fontStyle: FontStyle.italic,
+        if (isDesktop) ...[
+          masthead(fullName),
+          const SizedBox(height: 24),
+          tagline,
+        ] else
+          // No outer column to hang the portrait in below the desktop spread,
+          // so it sits in the masthead itself: picture on the left, name and
+          // line of copy set beside it.
+          //
+          // Both halves are sized from the row rather than fixed, because the
+          // two grow at different rates otherwise — the headline scales with
+          // the viewport while a fixed-ratio plate does not, and by the time
+          // the screen is tablet-wide the picture is a stamp floating beside
+          // a headline twice its height.
+          LayoutBuilder(
+            builder: (context, constraints) {
+              const gap = 16.0;
+              final rowWidth = constraints.maxWidth;
+              final blockGap = isMobile ? 12.0 : 16.0;
+              final scaler = MediaQuery.textScalerOf(context);
+
+              // Both halves are solved together rather than fixed, because
+              // they pull on each other: a wider plate leaves a narrower
+              // column, a narrower column sets a smaller name, and a smaller
+              // name makes a shorter block for the plate to match.
+              //
+              // Guess a plate width, measure the type that width leaves room
+              // for, then re-cut the plate to that height at a portrait
+              // ratio. One correction is enough — the second pass moves the
+              // width by a few pixels.
+              var plateWidth = (rowWidth * 0.34).clamp(96.0, 190.0);
+              var nameSize = fullName;
+
+              // How wide "srivastava" — the longest line in the masthead —
+              // sets per point of type. Measured rather than assumed: a
+              // guessed ratio has to be pessimistic to be safe, and every
+              // point of pessimism is width the picture never gets back.
+              final perPoint =
+                  _lineWidth(
+                    'srivastava',
+                    AppType.display(context, size: 100, height: 0.92),
+                    scaler,
+                  ) /
+                  100;
+
+              for (var pass = 0; pass < 2; pass++) {
+                final column = rowWidth - plateWidth - gap;
+                // The headline can only grow to what the column allows —
+                // otherwise the name clips the moment the screen narrows.
+                // The 0.98 is slack, not superstition: sized to the column
+                // exactly, a hair of rounding wraps "srivastava" onto a third
+                // line, which grows the block, which grows the plate.
+                nameSize = math.min(fullName, column * 0.98 / perPoint);
+                final blockHeight =
+                    _measure(
+                      'kartikey\nsrivastava',
+                      AppType.display(context, size: nameSize, height: 0.92),
+                      column,
+                      scaler,
+                    ) +
+                    blockGap +
+                    _measure(_heroLine, taglineStyle, column, scaler);
+                // The plate is as tall as that block, so its width is what
+                // sets its proportion. It is cut generously — a shade under
+                // square — and only gives way when the row is too narrow to
+                // afford it, which is what the share cap below is for.
+                plateWidth = (blockHeight * 0.88).clamp(96.0, rowWidth * 0.42);
+              }
+
+              // Measurement picks the width; the layout still settles the
+              // height. IntrinsicHeight measures the type, `stretch` hands
+              // that exact height to the plate, so the two are one block at
+              // any size — no estimate can drift them apart.
+              return IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _HeroMugshot(width: plateWidth),
+                    const SizedBox(width: gap),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          masthead(nameSize),
+                          SizedBox(height: blockGap),
+                          tagline,
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              style: AppType.display(context, size: nameSize, height: 0.92),
-            )
-            .animate()
-            .fadeIn(delay: 80.ms, duration: 800.ms)
-            .slideY(begin: 0.12, end: 0, curve: Motion.curve),
-        SizedBox(height: isMobile ? 18 : 24),
-        Text(
-              'Crafting apps that people love to use.',
-              style: AppType.ui(
-                context,
-                size: Layout.fluid(context, min: 17, max: 23),
-                weight: FontWeight.w500,
-                color: pal.ink,
-                height: 1.4,
-                letterSpacing: -0.3,
-              ),
-            )
-            .animate()
-            .fadeIn(delay: 220.ms, duration: 600.ms)
-            .slideY(begin: 0.2, end: 0),
-        const SizedBox(height: 14),
+                  ],
+                ),
+              );
+            },
+          ),
+        SizedBox(height: isMobile ? 22 : 24),
         ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: Layout.maxProse),
           child:
               Text(
-                    'Mobile developer shipping cross platform apps for iOS and '
-                    'Android. Love to build beautiful and functional apps that people love to use.',
+                    'mobile developer shipping cross platform apps for ios and '
+                    'android. love to build beautiful and functional apps that people love to use.',
                     style: AppType.ui(
                       context,
                       size: isMobile ? 15 : 16.5,
@@ -138,28 +274,42 @@ class _HeroContent extends StatelessWidget {
                   .fadeIn(delay: 300.ms, duration: 600.ms)
                   .slideY(begin: 0.2, end: 0),
         ),
-        SizedBox(height: isMobile ? 26 : 32),
+        SizedBox(height: isMobile ? 32 : 32),
         Wrap(
               spacing: 12,
               runSpacing: 12,
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 ActionButton(
-                  label: 'See my work',
-                  icon: Icons.arrow_forward_rounded,
+                  label: 'see my work',
+                  icon: Icons.arrow_downward_rounded,
                   onPressed: () => scope?.goToSection(SectionScope.work),
                 ),
                 IconAction(
                   icon: const Glyph.brand(FontAwesomeIcons.github),
-                  tooltip: 'GitHub',
+                  tooltip: 'github',
                   size: 46,
                   onPressed: () => launchUrl(Uri.parse(kGithub)),
                 ),
                 IconAction(
                   icon: const Glyph.brand(FontAwesomeIcons.linkedinIn),
-                  tooltip: 'LinkedIn',
+                  tooltip: 'linkedin',
                   size: 46,
                   onPressed: () => launchUrl(Uri.parse(kLinkedin)),
+                ),
+                ActionButton(
+                  label: 'resume',
+                  icon: Icons.arrow_outward_rounded,
+                  tone: ActionTone.ghost,
+                  compact: true,
+                  tooltip: 'open the pdf',
+                  // Resolved against the page the site is served from, so the
+                  // PDF opens in its own tab rather than as a relative path
+                  // the browser hands back to the router.
+                  onPressed: () => launchUrl(
+                    Uri.base.resolve(kResumeUrl),
+                    mode: LaunchMode.externalApplication,
+                  ),
                 ),
               ],
             )
@@ -173,6 +323,159 @@ class _HeroContent extends StatelessWidget {
             .slideY(begin: 0.2, end: 0),
       ],
     );
+  }
+}
+
+/// The photograph, mounted the way the story page mounts its polaroids: a
+/// paper plate, a hairline rule, and a couple of degrees off square so the
+/// masthead has something human sitting beside it. It straightens under the
+/// cursor — the same bit of play the collage further down the page keeps.
+///
+/// A scrim runs up from the bottom edge in the colour of the page, so the
+/// print settles into the stock instead of ending in a hard cut.
+class _HeroPortrait extends StatefulWidget {
+  const _HeroPortrait();
+
+  @override
+  State<_HeroPortrait> createState() => _HeroPortraitState();
+}
+
+class _HeroPortraitState extends State<_HeroPortrait> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final pal = context.palette;
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child:
+          Padding(
+                // Drops the plate to the headline's shoulder rather than the
+                // top of the column, so the two blocks read as one spread.
+                padding: const EdgeInsets.only(top: 18),
+                child: AnimatedRotation(
+                  duration: Motion.base,
+                  curve: Motion.curve,
+                  turns: _hovered ? 0 : -2.2 / 360,
+                  child: AnimatedContainer(
+                    duration: Motion.base,
+                    curve: Motion.curve,
+                    decoration: BoxDecoration(
+                      color: pal.paperRaised,
+                      borderRadius: BorderRadius.circular(Radii.card),
+                      border: Border.all(
+                        color: _hovered ? pal.ruleStrong : pal.rule,
+                      ),
+                      boxShadow: _hovered ? pal.liftedShadow : pal.restShadow,
+                    ),
+                    padding: const EdgeInsets.all(7),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(Radii.inset),
+                          child: AspectRatio(
+                            aspectRatio: 1,
+                            child: Stack(
+                              fit: StackFit.expand,
+                              children: [
+                                Image.asset(
+                                  kPortrait,
+                                  fit: BoxFit.cover,
+                                  alignment: const Alignment(-0.05, -0.15),
+                                  cacheWidth: 900,
+                                ),
+                                DecoratedBox(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topCenter,
+                                      end: Alignment.bottomCenter,
+                                      colors: [
+                                        Colors.transparent,
+                                        pal.paper.withValues(alpha: 0.55),
+                                      ],
+                                      stops: const [0.55, 1.0],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 2, bottom: 2),
+                          child: Text(
+                            'at the desk',
+                            style: AppType.label(
+                              context,
+                              size: 9.5,
+                              color: pal.inkFaint,
+                              letterSpacing: 1.4,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              )
+              .animate()
+              .fadeIn(delay: 480.ms, duration: 700.ms)
+              .slideY(begin: 0.08, end: 0, curve: Motion.curve),
+    );
+  }
+}
+
+/// The same photograph, set into the masthead on every layout narrower than
+/// the desktop spread. Same plate as the big one — paper, hairline rule, the
+/// picture inset — but square to the type rather than tilted: at this size a
+/// tilt beside a headline reads as a mistake instead of as play.
+class _HeroMugshot extends StatelessWidget {
+  final double width;
+
+  const _HeroMugshot({required this.width});
+
+  @override
+  Widget build(BuildContext context) {
+    final pal = context.palette;
+    return Container(
+          width: width,
+          decoration: BoxDecoration(
+            color: pal.paperRaised,
+            borderRadius: BorderRadius.circular(Radii.card),
+            border: Border.all(color: pal.rule),
+            boxShadow: pal.restShadow,
+          ),
+          padding: const EdgeInsets.all(4),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(Radii.inset),
+            // The plate contributes no height of its own — not a ratio, not a
+            // floor — so the masthead's IntrinsicHeight measures only the type
+            // beside it and hands that exact height back here. The picture is
+            // *positioned* to keep it out of that measurement: left in the
+            // flow, a 1280×854 asset reports its own decoded height and starts
+            // driving the row instead of following it.
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                Positioned.fill(
+                  child: Image.asset(
+                    kPortrait,
+                    fit: BoxFit.cover,
+                    alignment: const Alignment(-0.05, -0.2),
+                    cacheWidth: 400,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        )
+        .animate()
+        .fadeIn(delay: 140.ms, duration: 700.ms)
+        .slideY(begin: 0.12, end: 0, curve: Motion.curve);
   }
 }
 
@@ -214,9 +517,9 @@ class _StatusPill extends StatelessWidget {
           const SizedBox(width: 9),
           Flexible(
             child: Text(
-              '${current.role} @ ${current.company}'.toUpperCase(),
+              '${current.role} @ ${current.company}'.toLowerCase(),
               overflow: TextOverflow.ellipsis,
-              style: AppType.mono(
+              style: AppType.label(
                 context,
                 size: isMobile ? 9.5 : 11,
                 weight: FontWeight.w600,
@@ -259,7 +562,6 @@ class _HeroStats extends StatelessWidget {
   }
 }
 
-
 /// Bottom-of-hero affordance: tells the visitor there is more, and takes them
 /// there when clicked.
 class _ScrollCue extends StatelessWidget {
@@ -271,7 +573,7 @@ class _ScrollCue extends StatelessWidget {
     final pal = context.palette;
     return Pressable(
       onPressed: onTap,
-      semanticLabel: 'Scroll to my work',
+      semanticLabel: 'scroll to my work',
       builder: (context, hovered, focused) => AnimatedOpacity(
         duration: Motion.fast,
         opacity: hovered ? 1 : 0.62,
@@ -279,8 +581,8 @@ class _ScrollCue extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'SCROLL',
-              style: AppType.mono(
+              'scroll',
+              style: AppType.label(
                 context,
                 size: 10,
                 weight: FontWeight.w600,
