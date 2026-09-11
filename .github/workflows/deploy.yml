@@ -38,15 +38,21 @@ jobs:
 
       - name: Build web
         run: |
-          # A user site (<owner>.github.io) is served from the domain root;
-          # every other repo is served from /<repo>/. Deriving the base href
-          # from the repository name means renaming the repo is all it takes
-          # to move the site — no workflow edit, and no chance of the href and
-          # the real path disagreeing, which serves a blank page.
+          # Where the site will be served from decides the base href, and a
+          # mismatch between the two serves a blank page rather than an error.
+          # Two things put it at the domain root: a custom domain (Pages reads
+          # web/CNAME, which Flutter copies into the build) or a user site
+          # named <owner>.github.io. Anything else is served from /<repo>/.
+          #
+          # Reading it here rather than pinning it means renaming the repo or
+          # adding a domain is the whole job — no workflow edit in lockstep.
           repo="${GITHUB_REPOSITORY#*/}"
           owner="${GITHUB_REPOSITORY%/*}"
-          if [ "$(echo "$repo" | tr '[:upper:]' '[:lower:]')" \
-             = "$(echo "$owner" | tr '[:upper:]' '[:lower:]').github.io" ]; then
+          lower() { echo "$1" | tr '[:upper:]' '[:lower:]'; }
+          if [ -f web/CNAME ]; then
+            base="/"
+            echo "Custom domain: $(cat web/CNAME)"
+          elif [ "$(lower "$repo")" = "$(lower "$owner").github.io" ]; then
             base="/"
           else
             base="/$repo/"
