@@ -13,11 +13,10 @@ import 'package:google_fonts/google_fonts.dart';
 /// for the margin. Depth comes from hairline rules and a raised surface rather
 /// than from glass and glow.
 ///
-/// Dark mode is the same press run on black stock — a night edition — not a
-/// different design. Every role below keeps its meaning in both: [paperDeep] is
-/// always the recessed band, [paperRaised] always the sheet lying on top, [ink]
-/// always the colour you read. Because of that, widgets name roles rather than
-/// colours and need no branching of their own.
+/// The site prints on black stock — the night edition — and only that. Widgets
+/// name roles rather than colours ([paperDeep] is the recessed band,
+/// [paperRaised] the sheet lying on top, [ink] the colour you read), so nothing
+/// downstream branches on a theme.
 /// ─────────────────────────────────────────────────────────────────────────────
 @immutable
 class Palette extends ThemeExtension<Palette> {
@@ -87,37 +86,11 @@ class Palette extends ThemeExtension<Palette> {
     required this.shadowFar,
   });
 
-  /// Bone stock, near-black ink, ultramarine.
-  static const light = Palette(
-    brightness: Brightness.light,
-    paper: Color(0xFFF3F0E9),
-    paperDeep: Color(0xFFEAE5D9),
-    paperRaised: Color(0xFFFCFAF6),
-    paperWhite: Color(0xFFFFFFFF),
-    heroTop: Color(0xFFEFEBE1),
-    ink: Color(0xFF15130F),
-    inkLight: Color(0xFF56514A),
-    inkFaint: Color(0xFF8C857A),
-    rule: Color(0x1A15130F),
-    ruleStrong: Color(0x3315130F),
-    accent: Color(0xFF2438E0),
-    accentLight: Color(0xFF4557F2),
-    accentDark: Color(0xFF1A29AC),
-    accentWash: Color(0xFFE3E6FD),
-    vermillion: Color(0xFFD6522C),
-    vermillionWash: Color(0xFFFBE8E0),
-    live: Color(0xFF2E7D53),
-    bezel: Color(0xFF15130F),
-    shadowColor: Color(0xFF15130F),
-    shadowNear: 0.05,
-    shadowFar: 0.06,
-  );
-
-  /// The night edition. The stock keeps the warm bias of the bone paper rather
-  /// than going blue-black, so the two modes read as the same publication; the
-  /// inks are lifted because ultramarine and vermillion at their paper values
-  /// go muddy against black.
-  static const dark = Palette(
+  /// The night edition — the one stock the site is printed on. It keeps the
+  /// warm bias of bone paper rather than going blue-black, and the inks are
+  /// lifted because ultramarine and vermillion at their paper values go muddy
+  /// against black.
+  static const night = Palette(
     brightness: Brightness.dark,
     paper: Color(0xFF141210),
     paperDeep: Color(0xFF0D0C0A),
@@ -141,8 +114,6 @@ class Palette extends ThemeExtension<Palette> {
     shadowNear: 0.30,
     shadowFar: 0.42,
   );
-
-  bool get isDark => brightness == Brightness.dark;
 
   // ── Role aliases, so widgets can say what a surface is for ──────────────
   Color get background => paper;
@@ -196,18 +167,17 @@ class Palette extends ThemeExtension<Palette> {
       offset: const Offset(0, 1),
     ),
     BoxShadow(
-      color: c.withValues(alpha: isDark ? 0.34 : 0.22),
+      color: c.withValues(alpha: 0.34),
       blurRadius: 38,
       spreadRadius: -6,
       offset: const Offset(0, 16),
     ),
   ];
 
-  /// Feature accents are authored once, as the printer's ink they are on paper.
-  /// On black stock those same values go muddy, so they are lifted into a range
-  /// that still reads — rather than being maintained twice in the data.
+  /// Feature accents are authored as the printer's ink they would be on paper.
+  /// On black stock those same values go muddy, so every one of them is lifted
+  /// into a range that still reads — rather than being restated in the data.
   Color liftAccent(Color c) {
-    if (!isDark) return c;
     final h = HSLColor.fromColor(c);
     return h
         .withLightness(math.max(h.lightness, 0.66))
@@ -215,25 +185,16 @@ class Palette extends ThemeExtension<Palette> {
         .toColor();
   }
 
-  /// One hue per skill. Pulled toward printer's inks on paper — saturated but
-  /// never fluorescent — and lifted on black so a wall of dots stays legible.
-  List<Color> get skillDots => isDark
-      ? const [
-          Color(0xFF7C8CFF), // ultramarine
-          Color(0xFF4ADE80), // forest
-          Color(0xFFE0B23C), // ochre
-          Color(0xFFB08CFF), // violet
-          Color(0xFFFF7A54), // vermillion
-          Color(0xFF3ECFD9), // teal
-        ]
-      : const [
-          Color(0xFF2438E0),
-          Color(0xFF2E7D53),
-          Color(0xFFB0851F),
-          Color(0xFF7A4BC4),
-          Color(0xFFD6522C),
-          Color(0xFF0E7C86),
-        ];
+  /// One hue per skill — printer's inks, saturated but never fluorescent, and
+  /// pitched bright enough that a wall of dots stays legible on black.
+  List<Color> get skillDots => const [
+    Color(0xFF7C8CFF), // ultramarine
+    Color(0xFF4ADE80), // forest
+    Color(0xFFE0B23C), // ochre
+    Color(0xFFB08CFF), // violet
+    Color(0xFFFF7A54), // vermillion
+    Color(0xFF3ECFD9), // teal
+  ];
 
   @override
   Palette copyWith({
@@ -284,9 +245,8 @@ class Palette extends ThemeExtension<Palette> {
     shadowFar: shadowFar ?? this.shadowFar,
   );
 
-  /// Lerping every colour is what lets the whole page cross-fade between the
-  /// two editions instead of snapping — [MaterialApp] drives this for free once
-  /// the palette rides in [ThemeData.extensions].
+  /// Required of a [ThemeExtension]: it is what would cross-fade the page if a
+  /// second palette ever joined this one, rather than snapping between them.
   @override
   Palette lerp(covariant Palette? other, double t) {
     if (other == null) return this;
@@ -319,9 +279,9 @@ class Palette extends ThemeExtension<Palette> {
 }
 
 extension PaletteAccess on BuildContext {
-  /// The palette for this subtree. Falls back to the light edition so widgets
+  /// The palette for this subtree. Falls back to the edition itself so widgets
   /// still render outside a themed app (previews, tests, embeds).
-  Palette get palette => Theme.of(this).extension<Palette>() ?? Palette.light;
+  Palette get palette => Theme.of(this).extension<Palette>() ?? Palette.night;
 }
 
 /// Breakpoints for the three layouts the site actually ships: a single column
@@ -379,21 +339,22 @@ class Motion {
   static const slow = Duration(milliseconds: 600);
   static const reveal = Duration(milliseconds: 700);
 
-  /// How long the page takes to cross-fade between the two editions.
-  static const themeSwap = Duration(milliseconds: 420);
-
   static const curve = Curves.easeOutCubic;
   static const emphasized = Curves.easeInOutCubic;
 }
 
-/// The three voices on the page.
+/// One voice, three registers.
 ///
-/// [display] is Instrument Serif — a high-contrast editorial face that ships a
-/// single weight, so headlines get their presence from size and tight tracking
-/// rather than from going bold. [ui] is Inter Tight for everything you read at
-/// paragraph size. [mono] is JetBrains Mono, used small and letterspaced for
-/// the labels, datelines and stack chips that frame the content — the same role
-/// a caption line plays in a magazine.
+/// The whole site is set in Outfit — a geometric sans in the Gilroy mould, the
+/// shape of type the fintech apps set their lower-case headlines in. Because a
+/// single family carries everything, the registers are told apart by weight and
+/// tracking rather than by a change of face: [display] is large, semibold and
+/// tracked tight; [ui] is the paragraph register; [label] is small, a step
+/// heavier and letterspaced open, for the eyebrows, datelines and stack chips
+/// that frame the content.
+///
+/// Emphasis inside a headline is weight, never italic — Outfit ships no italic,
+/// and faking one on a geometric face reads as a mistake.
 ///
 /// Each takes a [BuildContext] only to resolve its default ink; pass an
 /// explicit `color` and the context is ignored.
@@ -403,17 +364,17 @@ class AppType {
   static TextStyle display(
     BuildContext context, {
     required double size,
+    FontWeight weight = FontWeight.w600,
     Color? color,
     double height = 0.96,
     double? letterSpacing,
-    FontStyle fontStyle = FontStyle.normal,
   }) => _display(
     context.palette,
     size: size,
+    weight: weight,
     color: color,
     height: height,
     letterSpacing: letterSpacing,
-    fontStyle: fontStyle,
   );
 
   static TextStyle ui(
@@ -432,14 +393,14 @@ class AppType {
     letterSpacing: letterSpacing,
   );
 
-  static TextStyle mono(
+  static TextStyle label(
     BuildContext context, {
     double size = 11.5,
-    FontWeight weight = FontWeight.w500,
+    FontWeight weight = FontWeight.w600,
     Color? color,
-    double letterSpacing = 1.4,
+    double letterSpacing = 0.9,
     double height = 1.2,
-  }) => _mono(
+  }) => _label(
     context.palette,
     size: size,
     weight: weight,
@@ -450,19 +411,27 @@ class AppType {
 
   // Palette-driven variants, so the base text theme can be built before there
   // is any context to read from.
+  /// Headline register. Sizes are authored at the scale the old editorial
+  /// serif wanted; a geometric sans sets appreciably wider and taller at the
+  /// same point size, so [_displayScale] brings every headline back to the
+  /// measure the layouts were built around instead of re-authoring 40 call
+  /// sites — and the tracking closes up, which is what makes the face read as
+  /// a brand mark rather than as body copy blown up.
+  static const _displayScale = 0.86;
+
   static TextStyle _display(
     Palette p, {
     required double size,
+    FontWeight weight = FontWeight.w600,
     Color? color,
     double height = 0.96,
     double? letterSpacing,
-    FontStyle fontStyle = FontStyle.normal,
-  }) => GoogleFonts.instrumentSerif(
-    fontSize: size,
+  }) => GoogleFonts.outfit(
+    fontSize: size * _displayScale,
+    fontWeight: weight,
     color: color ?? p.ink,
     height: height,
-    fontStyle: fontStyle,
-    letterSpacing: letterSpacing ?? -size * 0.018,
+    letterSpacing: letterSpacing ?? -size * _displayScale * 0.03,
   );
 
   static TextStyle _ui(
@@ -472,22 +441,24 @@ class AppType {
     Color? color,
     double height = 1.6,
     double letterSpacing = 0,
-  }) => GoogleFonts.interTight(
+  }) => GoogleFonts.outfit(
     fontSize: size,
     fontWeight: weight,
     color: color ?? p.inkLight,
     height: height,
-    letterSpacing: letterSpacing,
+    // A hair tighter than default: the geometric bowls leave more air between
+    // words than a grotesque does, and prose set loose looks unset.
+    letterSpacing: letterSpacing - size * 0.006,
   );
 
-  static TextStyle _mono(
+  static TextStyle _label(
     Palette p, {
     double size = 11.5,
-    FontWeight weight = FontWeight.w500,
+    FontWeight weight = FontWeight.w600,
     Color? color,
-    double letterSpacing = 1.4,
+    double letterSpacing = 0.9,
     double height = 1.2,
-  }) => GoogleFonts.jetBrainsMono(
+  }) => GoogleFonts.outfit(
     fontSize: size,
     fontWeight: weight,
     color: color ?? p.inkFaint,
@@ -597,7 +568,7 @@ class Eyebrow extends StatelessWidget {
         const SizedBox(width: 10),
         Text(
           label.toUpperCase(),
-          style: AppType.mono(
+          style: AppType.label(
             context,
             size: 11,
             weight: FontWeight.w600,
@@ -729,8 +700,8 @@ double rad(double degrees) => degrees * math.pi / 180;
 class AppTheme {
   const AppTheme._();
 
-  static ThemeData get light => _from(Palette.light);
-  static ThemeData get dark => _from(Palette.dark);
+  /// The site's one theme.
+  static ThemeData get night => _from(Palette.night);
 
   static ThemeData _from(Palette p) {
     final base = ThemeData(brightness: p.brightness);
@@ -776,7 +747,7 @@ class AppTheme {
           color: p.ink,
           borderRadius: BorderRadius.circular(Radii.inset),
         ),
-        textStyle: AppType._mono(
+        textStyle: AppType._label(
           p,
           size: 11,
           weight: FontWeight.w500,
@@ -789,7 +760,7 @@ class AppTheme {
         surfaceTintColor: Colors.transparent,
         elevation: 0,
       ),
-      textTheme: GoogleFonts.interTightTextTheme(base.textTheme).copyWith(
+      textTheme: GoogleFonts.outfitTextTheme(base.textTheme).copyWith(
         displayLarge: AppType._display(p, size: 104, height: 0.9),
         displayMedium: AppType._display(p, size: 72, height: 0.94),
         displaySmall: AppType._display(p, size: 46, height: 1.02),
@@ -810,11 +781,9 @@ class AppTheme {
   /// Keeps the browser/OS chrome in step with the stock currently on the press.
   static SystemUiOverlayStyle overlayFor(Palette p) => SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
-    statusBarIconBrightness: p.isDark ? Brightness.light : Brightness.dark,
+    statusBarIconBrightness: Brightness.light,
     statusBarBrightness: p.brightness,
     systemNavigationBarColor: p.paper,
-    systemNavigationBarIconBrightness: p.isDark
-        ? Brightness.light
-        : Brightness.dark,
+    systemNavigationBarIconBrightness: Brightness.light,
   );
 }

@@ -11,35 +11,23 @@ import 'pages/hey_page.dart';
 import 'pages/story_page.dart';
 import 'pages/work_page.dart';
 import 'theme/app_theme.dart';
-import 'theme/edition.dart';
 import 'widgets/actions.dart';
 import 'widgets/nav_bar.dart';
 import 'widgets/section_scope.dart';
 
 class PortfolioApp extends StatelessWidget {
-  /// The edition read off disk in `main`, before the first frame.
-  final ThemeMode initialMode;
-
-  const PortfolioApp({super.key, this.initialMode = ThemeMode.system});
+  const PortfolioApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return EditionScope(
-      initialMode: initialMode,
-      builder: (context, mode) => MaterialApp(
-        title: 'Kartikey — Mobile Developer',
-        debugShowCheckedModeBanner: false,
-        // Both editions are handed to MaterialApp rather than one being swapped
-        // in: that is what lets it cross-fade the palette on toggle instead of
-        // cutting, since the whole palette rides in ThemeData.extensions.
-        theme: AppTheme.light,
-        darkTheme: AppTheme.dark,
-        themeMode: mode,
-        themeAnimationDuration: Motion.themeSwap,
-        themeAnimationCurve: Motion.emphasized,
-        scrollBehavior: const _SiteScrollBehavior(),
-        home: const _PortfolioShell(),
-      ),
+    return MaterialApp(
+      title: 'kartikey — mobile developer',
+      debugShowCheckedModeBanner: false,
+      // One edition, handed over as `theme` with no `darkTheme` beside it, so
+      // the site prints on black stock whatever the reader's OS is set to.
+      theme: AppTheme.night,
+      scrollBehavior: const _SiteScrollBehavior(),
+      home: const _PortfolioShell(),
     );
   }
 }
@@ -283,7 +271,7 @@ class _BackToTop extends StatelessWidget {
           ignoring: !visible,
           child: IconAction(
             icon: const Glyph.material(Icons.keyboard_arrow_up_rounded),
-            tooltip: 'Back to top',
+            tooltip: 'back to top',
             size: 46,
             onPressed: onPressed,
           ),
@@ -302,39 +290,26 @@ class _Footer extends StatelessWidget {
     final pal = context.palette;
     final isMobile = Breaks.isMobile(context);
 
-    final links = Wrap(
-      spacing: 20,
-      runSpacing: 10,
-      alignment: WrapAlignment.center,
-      children: [
-        for (var i = 0; i < PortfolioNavBar.labels.length; i++)
-          _FooterLink(
-            label: PortfolioNavBar.labels[i],
-            onTap: () => onGoToSection(i),
-          ),
-      ],
-    );
-
     final socials = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         IconAction(
           icon: const Glyph.material(Icons.mail_outline_rounded),
-          tooltip: 'Email',
+          tooltip: 'email',
           size: 38,
           onPressed: () => launchUrl(Uri.parse('mailto:$kEmail')),
         ),
         const SizedBox(width: 8),
         IconAction(
           icon: const Glyph.brand(FontAwesomeIcons.github),
-          tooltip: 'GitHub',
+          tooltip: 'github',
           size: 38,
           onPressed: () => launchUrl(Uri.parse(kGithub)),
         ),
         const SizedBox(width: 8),
         IconAction(
           icon: const Glyph.brand(FontAwesomeIcons.linkedinIn),
-          tooltip: 'LinkedIn',
+          tooltip: 'linkedin',
           size: 38,
           onPressed: () => launchUrl(Uri.parse(kLinkedin)),
         ),
@@ -342,9 +317,9 @@ class _Footer extends StatelessWidget {
     );
 
     final credit = Text(
-      '© 2026 KARTIKEY SRIVASTAVA · SET IN FLUTTER',
+      '© 2026 kartikey srivastava · made with flutter',
       textAlign: TextAlign.center,
-      style: AppType.mono(context, size: 9.5, letterSpacing: 1.2),
+      style: AppType.label(context, size: 9.5, letterSpacing: 1.2),
     );
 
     return Container(
@@ -358,7 +333,6 @@ class _Footer extends StatelessWidget {
         child: isMobile
             ? Column(
                 children: [
-                  links,
                   const SizedBox(height: Space.md),
                   socials,
                   const SizedBox(height: Space.md),
@@ -373,48 +347,11 @@ class _Footer extends StatelessWidget {
                       child: credit,
                     ),
                   ),
-                  links,
                   const SizedBox(width: Space.lg),
                   socials,
                 ],
               ),
       ),
-    );
-  }
-}
-
-class _FooterLink extends StatelessWidget {
-  final String label;
-  final VoidCallback onTap;
-
-  const _FooterLink({required this.label, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    final pal = context.palette;
-    return Pressable(
-      onPressed: onTap,
-      semanticLabel: '$label section',
-      builder: (context, hovered, focused) {
-        final active = hovered || focused;
-        return Text(
-          label.toUpperCase(),
-          style:
-              AppType.mono(
-                context,
-                size: 10.5,
-                weight: FontWeight.w600,
-                color: active ? pal.ink : pal.inkLight,
-                letterSpacing: 1.4,
-              ).copyWith(
-                decoration: active
-                    ? TextDecoration.underline
-                    : TextDecoration.none,
-                decorationColor: pal.vermillion,
-                decorationThickness: 2,
-              ),
-        );
-      },
     );
   }
 }

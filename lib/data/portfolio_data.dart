@@ -1,6 +1,18 @@
+/// Anything that can appear as a card in the "My Work" carousel.
+///
+/// Two kinds live side by side: a [Feature] — a shipped piece of product work
+/// with phone-framed media and a full detail page — and a [Post], the lighter
+/// card for a hackathon build, a side project or a weekend experiment, where
+/// one image and a few lines are the whole story.
+abstract class WorkItem {
+  /// Stable slug, unique across features *and* posts.
+  String get id;
+}
+
 /// A single shipped feature shown in the "My Work" showcase. Each entry is one
 /// piece of product work (e.g. a recommendation rail), not a whole app.
-class Feature {
+class Feature implements WorkItem {
+  @override
   final String id;
   final String name;
 
@@ -48,6 +60,86 @@ class Feature {
     this.showcase = const [],
     required this.accentColor,
   });
+}
+
+/// A lightweight "here's a thing I built" card — one image and some words.
+///
+/// Use this for hackathon builds, side projects and weekend experiments: work
+/// worth showing that doesn't need screen recordings, a highlight list or a
+/// detail page. It renders as a card in the same carousel as [Feature], with
+/// the image filling the media well instead of a phone frame. Tapping it opens
+/// the image full-screen; if [link] is set, the card also carries a small
+/// action that opens the original post (LinkedIn, a repo, a devpost page…).
+class Post implements WorkItem {
+  @override
+  final String id;
+
+  /// The headline — what you built. e.g. "Nyaya Sathi".
+  final String title;
+
+  /// The dateline under the title — where and when, e.g.
+  /// "HackByte 3.0 · March 2026". Shown in small caps, in the accent colour.
+  final String context;
+
+  /// The card's copy — a short paragraph in your own voice, the way you'd
+  /// caption the post. Two to four sentences reads best on the card.
+  final String body;
+
+  /// The longer write-up on the post's own page. Leave it empty and the page
+  /// falls back to [body].
+  final String description;
+
+  /// What you actually built — the bullet list under the story.
+  final List<String> highlights;
+
+  /// The one image that carries the card. Asset path (e.g.
+  /// `assets/images/hackbyte_team.jpg`) or an http(s) URL. Landscape crops
+  /// best; portrait works too and is letterboxed on its accent wash.
+  final String? image;
+
+  /// The rest of the deck, shown after [image] — slides, photos, anything
+  /// worth swiping through on the post's page.
+  final List<String> gallery;
+
+  /// Stack / theme stamps along the bottom of the card.
+  final List<String> tags;
+
+  /// A photo mounted in the margin of the post's page, below the tags and the
+  /// link — where the column would otherwise run out of content. A portrait
+  /// shot sits best here; it stays out of the deck.
+  final String? sideImage;
+
+  /// Caption printed under [sideImage], in the same small type as a plate
+  /// caption in a magazine.
+  final String sideCaption;
+
+  /// Optional link to the original post or repo.
+  final String? link;
+
+  /// Label for that link, e.g. "Read the post" or "See the repo".
+  final String linkLabel;
+
+  final String accentColor;
+
+  const Post({
+    required this.id,
+    required this.title,
+    required this.context,
+    required this.body,
+    this.description = '',
+    this.highlights = const [],
+    this.image,
+    this.gallery = const [],
+    this.tags = const [],
+    this.sideImage,
+    this.sideCaption = '',
+    this.link,
+    this.linkLabel = 'read the post',
+    required this.accentColor,
+  });
+
+  /// The whole deck in order — [image] first, then [gallery].
+  List<String> get allImages => [?image, ...gallery];
 }
 
 /// Media helpers — every media field accepts either a local asset path
@@ -102,34 +194,34 @@ class Education {
 const kFeatures = [
   Feature(
     id: 'welcome-gift',
-    name: 'Welcome Gift',
-    context: 'Apna Mart · iOS & Android',
-    tagline: 'A free gift that turns first-time visitors into first orders',
+    name: 'welcome gift',
+    context: 'apna mart · ios & android',
+    tagline: 'a free gift that turns first-time visitors into first orders',
     shortDescription:
-        'New shoppers pick a free welcome gift that unlocks in their cart once '
+        'new shoppers pick a free welcome gift that unlocks in their cart once '
         'the order crosses a minimum — nudging them to place a first purchase.',
     description:
-        'The Welcome Gift is a growth feature that greets a brand-new shopper with '
-        'a free gift they get to choose themselves. They pick it during onboarding, '
+        'the welcome gift is a growth feature that greets a brand-new shopper with '
+        'a free gift they get to choose themselves. they pick it during onboarding, '
         'then it rides along in their cart as a locked reward that unlocks the moment '
         'their order crosses a small minimum value — a gentle nudge to complete that '
-        'important first purchase. If the gift they want is out of stock, they can opt '
-        'in to be notified when it’s back, so the offer never feels like a dead end. I '
+        'important first purchase. if the gift they want is out of stock, they can opt '
+        'in to be notified when it’s back, so the offer never feels like a dead end. i '
         'built the full experience — the gift selection screen, the locked/unlocked '
         'cart states, promo-video playback for each gift, and the celebration moments '
         'when a gift is picked and added.',
     highlights: [
-      'A free gift for new shoppers, chosen during onboarding — a strong reason to '
+      'a free gift for new shoppers, chosen during onboarding — a strong reason to '
           'place that first order',
-      'Locks in the cart and unlocks once the order crosses a minimum value, '
+      'locks in the cart and unlocks once the order crosses a minimum value, '
           'nudging a bigger, completed basket',
-      'Out-of-stock gifts offer a "notify me" opt-in, so the offer never dead-ends',
-      'A promo video plays for each gift so shoppers see exactly what they’re getting',
-      'Celebration dialogs when a gift is selected, added or changed — a rewarding '
+      'out-of-stock gifts offer a "notify me" opt-in, so the offer never dead-ends',
+      'a promo video plays for each gift so shoppers see exactly what they’re getting',
+      'celebration dialogs when a gift is selected, added or changed — a rewarding '
           'moment, not just a checkbox',
-      'Fully BLoC-driven state across selection, cart lock/unlock and notifications',
+      'fully bloc-driven state across selection, cart lock/unlock and notifications',
     ],
-    techStack: ['Flutter', 'Dart', 'BLoC', 'Animations', 'video_player'],
+    techStack: ['flutter', 'dart', 'bloc', 'animations', 'video_player'],
     // iOS screen recordings of the live feature (added to assets/videos/).
     previewVideo: 'assets/videos/welcome_gift_2.mp4',
     showcase: [
@@ -141,37 +233,37 @@ const kFeatures = [
   ),
   Feature(
     id: 'product-recommendation',
-    name: 'Product Recommendation Rail',
-    context: 'Apna Mart · iOS & Android',
-    tagline: 'Smart "you might also want…" suggestions at add-to-cart',
+    name: 'product recommendation rail',
+    context: 'apna mart · ios & android',
+    tagline: 'smart "you might also want…" suggestions at add-to-cart',
     shortDescription:
-        'A cross-page rail that suggests related products the moment a shopper '
-        'adds an item to their cart — live on Home, Search & Category.',
+        'a cross-page rail that suggests related products the moment a shopper '
+        'adds an item to their cart — live on home, search & category.',
     description:
-        'When a shopper adds a product to their cart, this rail slides in with a '
+        'when a shopper adds a product to their cart, this rail slides in with a '
         'curated set of related items — the same "customers also bought" nudge you '
-        'see on Amazon, built natively for Apna Mart’s grocery app. It works across '
-        'three of the app’s busiest surfaces (Home, Search and Category) from one '
+        'see on amazon, built natively for apna mart’s grocery app. it works across '
+        'three of the app’s busiest surfaces (home, search and category) from one '
         'shared engine, and is designed to boost basket size without getting in the '
         'shopper’s way: it appears intelligently rather than on every single tap, '
         'and every product shown is tracked so the team can measure what actually '
-        'converts. I built the full feature end to end — the state management, the '
+        'converts. i built the full feature end to end — the state management, the '
         'appearance logic, the analytics, and the multi-phase animations that make '
         'it feel smooth.',
     highlights: [
-      'Appears right when a product is added to cart, suggesting items shoppers '
+      'appears right when a product is added to cart, suggesting items shoppers '
           'are likely to buy together — nudging a bigger basket',
-      'One shared engine powers the rail across Home, Search & Category instead '
+      'one shared engine powers the rail across home, search & category instead '
           'of three separate implementations',
-      'Shows up intelligently — a sampling rule (add-to-cart counter + threshold) '
+      'shows up intelligently — a sampling rule (add-to-cart counter + threshold) '
           'keeps it helpful, not spammy',
-      'Multi-phase animations: smooth expand/collapse, a one-time entrance so it '
+      'multi-phase animations: smooth expand/collapse, a one-time entrance so it '
           'never re-animates, and a graceful minimize',
-      'Every recommendation shown is tracked (impression analytics) so the team '
+      'every recommendation shown is tracked (impression analytics) so the team '
           'can measure impact on conversions',
-      'Add / remove products straight from the rail — no need to leave the page',
+      'add / remove products straight from the rail — no need to leave the page',
     ],
-    techStack: ['Flutter', 'Dart', 'BLoC', 'Animations', 'Analytics'],
+    techStack: ['flutter', 'dart', 'bloc', 'animations', 'analytics'],
     // iOS screen recordings of the live feature (added to assets/videos/).
     previewVideo: 'assets/videos/product_rec_3.mp4',
     showcase: [
@@ -184,37 +276,37 @@ const kFeatures = [
 
   Feature(
     id: 'onboarding-revamp',
-    name: 'Onboarding Revamp',
-    context: 'Apna Mart · iOS & Android',
-    tagline: 'A polished first impression, rebuilt from splash to sign-in',
+    name: 'onboarding revamp',
+    context: 'apna mart · ios & android',
+    tagline: 'a polished first impression, rebuilt from splash to sign-in',
     shortDescription:
-        'End-to-end redesign of the app’s onboarding (codename "Junction") — '
-        'animated splash, a living sign-in screen, language switching & OTP login.',
+        'end-to-end redesign of the app’s onboarding (codename "junction") — '
+        'animated splash, a living sign-in screen, language switching & otp login.',
     description:
-        'Onboarding is the very first thing every new user sees, so I rebuilt it end '
-        'to end — internally codenamed "Junction". It opens with a smooth splash '
+        'onboarding is the very first thing every new user sees, so i rebuilt it end '
+        'to end — internally codenamed "junction". it opens with a smooth splash '
         'animation, then lands on a sign-in screen with a living backdrop: a grid of '
         'product images that drifts diagonally behind the card to make the app feel '
-        'alive from the first second. From there a shopper can switch the whole app '
-        'between English, Hindi and Bengali with one tap, then sign in through a clean '
-        'phone-number and OTP flow. The imagery is driven by remote config, so the '
+        'alive from the first second. from there a shopper can switch the whole app '
+        'between english, hindi and bengali with one tap, then sign in through a clean '
+        'phone-number and otp flow. the imagery is driven by remote config, so the '
         'team can refresh the look without shipping an app update — and the animations '
         'are built to stay buttery smooth with isolated repaints.',
     highlights: [
-      'Rebuilt the full flow — splash → animated sign-in → phone number → OTP — as '
+      'rebuilt the full flow — splash → animated sign-in → phone number → otp — as '
           'one cohesive first impression',
-      'Living sign-in backdrop: a diagonally scrolling grid of product images that '
+      'living sign-in backdrop: a diagonally scrolling grid of product images that '
           'keeps animating behind the card',
-      'One-tap language switching (English / Hindi / Bengali) right on the '
+      'one-tap language switching (english / hindi / bengali) right on the '
           'onboarding screen',
-      'Backdrop imagery is remote-config driven — the look can change without an '
+      'backdrop imagery is remote-config driven — the look can change without an '
           'app release',
-      'Lottie-powered splash that plays once, then routes intelligently based on '
+      'lottie-powered splash that plays once, then routes intelligently based on '
           'login & location state',
-      'Tuned for performance with isolated repaint boundaries so the animations '
+      'tuned for performance with isolated repaint boundaries so the animations '
           'never cost frame drops',
     ],
-    techStack: ['Flutter', 'Dart', 'Lottie', 'Animations', 'Remote Config'],
+    techStack: ['flutter', 'dart', 'lottie', 'animations', 'remote config'],
     // iOS screen recordings of the live feature (added to assets/videos/).
     previewVideo: 'assets/videos/onboarding_junction_1.mp4',
     showcase: [
@@ -226,103 +318,180 @@ const kFeatures = [
   ),
 ];
 
+/// Image-and-text cards — hackathons, side projects, weekend builds.
+///
+/// To add one: drop the photo in `assets/images/` and copy the entry below.
+/// Anything listed here lands in the carousel after the features — to slot a
+/// post between them instead, spell [kWorkItems] out entry by entry.
+const kPosts = [
+  Post(
+    id: 'nutrikit',
+    title: 'nutrikit for blinkit',
+    context: 'swiftdidload hackathon · eternal · july 2026',
+    body:
+        'a hackathon build with tejash seth and saurabh dhingra: scan a grocery '
+        'barcode, read the label in teaspoons instead of milligrams, and swap '
+        'to a better-rated product without ever leaving blinkit.',
+    description:
+        'swiftdidload gave us complete freedom to find a real user problem and '
+        'build for consumers across eternal — blinkit, zomato, district and '
+        'hyperpure. i had been sitting on this idea for a while and realised the '
+        'hackathon was its best possible home. nutrition labels are hard to read '
+        'mid-shop: raw per-100g values mean little, there is no instant score to '
+        'compare two similar products, and people leave the app to research a '
+        'packet — friction that breaks the shopping trip. nutrikit puts that '
+        'answer inside the cart. the inspiration was zomato\'s health mode; the '
+        'same transparency simply did not exist in grocery. we did not win, but '
+        'the eternal team backed the problem statement, the product thinking and '
+        'the polish of the mvp flow — and i would build it again.',
+    highlights: [
+      'scan a product barcode for instant nutrition insight, right inside the '
+          'shopping flow',
+      'nutrition translated into things people actually picture — teaspoons of '
+          'sugar rather than grams per 100g',
+      'a nutri-score and a simple metric breakdown so two similar products can '
+          'be compared at a glance',
+      'healthier alternatives pulled from what blinkit already stocks',
+      'one-tap healthier swaps offered during add-to-cart, where the decision '
+          'is actually being made',
+      'a personalised health journey that tracks how orders improve over time',
+    ],
+    // Cover first, then the deck and the photos from the day.
+    image: 'assets/images/nutrikit/slide_01.jpg',
+    gallery: [
+      'assets/images/nutrikit/slide_02.jpg',
+      'assets/images/nutrikit/slide_03.jpg',
+      'assets/images/nutrikit/slide_04.jpg',
+      'assets/images/nutrikit/slide_05.jpg',
+      'assets/images/nutrikit/slide_06.jpg',
+      'assets/images/nutrikit/slide_07.jpg',
+      'assets/images/nutrikit/slide_08.jpg',
+      'assets/images/nutrikit/slide_09.jpg',
+      'assets/images/nutrikit/slide_10.jpg',
+      'assets/images/nutrikit/slide_11.jpg',
+      'assets/images/nutrikit/team.jpg',
+    ],
+    tags: ['barcode scan', 'nutri-score', 'team of 3', '2-day build'],
+    sideImage: 'assets/images/nutrikit/building.jpg',
+    sideCaption: 'putting the deck together, the night before the demo.',
+    link:
+        'https://www.linkedin.com/feed/update/urn:li:activity:7484671260258426881/',
+    linkLabel: 'read the post',
+    accentColor: '#0C831F',
+  ),
+];
+
+/// The carousel, in order. Mix features and posts freely — the work page picks
+/// the right card for whatever is in the list.
+const kWorkItems = <WorkItem>[...kFeatures, ...kPosts];
+
 const kExperiences = [
   Experience(
-    company: 'Apna Mart',
-    role: 'Mobile Developer',
-    period: 'Jan 2026 – Present',
+    company: 'apna mart',
+    role: 'mobile developer',
+    period: 'jan 2026 – present',
     // Consumer app icon, apnamart.in.
     logoAsset: 'assets/images/logos/apna_mart.jpg',
     description:
-        'Building the iOS and Android Consumer App — shipping features, animations, and '
+        'building the ios and android consumer app — shipping features, animations, and '
         'localization while resolving production issues.',
     highlights: [
-      'Revamped the onboarding flow end to end, from Splash to Home page',
-      'Built a config-gated floating offer nudge banner on cart items to surface '
+      'revamped the onboarding flow end to end, from splash to home page',
+      'built a config-gated floating offer nudge banner on cart items to surface '
           'offer visibility',
-      'Made force/soft app-update dialogs server driven (heading, description, '
+      'made force/soft app-update dialogs server driven (heading, description, '
           'remote icon with fallback)',
-      'Standardized currency formatting & rounding logic across cart, offer tags '
-          '& MRP displays',
-      'Added Google Phone Number Hint to Android (native) onboarding, removing '
+      'standardized currency formatting & rounding logic across cart, offer tags '
+          '& mrp displays',
+      'added google phone number hint to android (native) onboarding, removing '
           'manual entry at signup',
-      'Optimized the Google Places integration, cutting per-request API billing '
+      'optimized the google places integration, cutting per-request api billing '
           '& response payload size',
-      'Built the Welcome Gift feature with a dynamic widget and cart-level logic, '
+      'built the welcome gift feature with a dynamic widget and cart-level logic, '
           'targeting first-order conversion',
-      'Developed a cross-page Product Recommendation Rail across Home, Search & '
-          'Category pages',
-      'Led app-wide localization for Hindi & Bengali, with in-app language '
+      'developed a cross-page product recommendation rail across home, search & '
+          'category pages',
+      'led app-wide localization for hindi & bengali, with in-app language '
           'switching from the profile page',
-      'Rebuilt the GPS & location-permission flow for iOS/Android, handling '
+      'rebuilt the gps & location-permission flow for ios/android, handling '
           'location, denials & fallback states',
-      'Implemented edge-to-edge system UI styling with safe-area handling for '
+      'implemented edge-to-edge system ui styling with safe-area handling for '
           'bottom sheets and keyboard layouts',
-      'Resolved production issues spanning payment flow, cart logic, monthly '
-          'Crashlytics, app size & UI overflow',
-      'Built multi-phase UI animations with AnimationControllers for '
+      'resolved production issues spanning payment flow, cart logic, monthly '
+          'crashlytics, app size & ui overflow',
+      'built multi-phase ui animations with animationcontrollers for '
           'recommendation rail entrances, auto-scrolling carousels & scale '
           'transitions for offer prices',
     ],
   ),
   Experience(
-    company: 'Ente',
-    role: 'Software Engineer Intern',
-    period: 'Aug 2025 – Oct 2025',
+    company: 'ente',
+    role: 'software engineer intern',
+    period: 'aug 2025 – oct 2025',
     // Site icon, ente.io.
     logoAsset: 'assets/images/logos/ente.png',
     description:
-        'Contributed to the open-source, end-to-end encrypted Photos app at ente.io.',
+        'contributed to the open-source, end-to-end encrypted photos app at ente.io.',
     highlights: [
-      'Redesigned bottom sheets & components for gallery, albums and people tabs',
-      'Implemented adaptive UI like collapsing & expanding on scroll',
-      'Updated icon grouping and swiping logic',
+      'redesigned bottom sheets & components for gallery, albums and people tabs',
+      'implemented adaptive ui like collapsing & expanding on scroll',
+      'updated icon grouping and swiping logic',
     ],
   ),
   Experience(
-    company: 'Imagined',
-    role: 'Flutter Intern',
-    period: 'Oct 2024 – Nov 2024',
+    company: 'imagined',
+    role: 'flutter intern',
+    period: 'oct 2024 – nov 2024',
     // Site icon, imagined.studio.
     logoAsset: 'assets/images/logos/imagined.png',
     description:
-        'Contributed to Solo, a platform connecting 100+ brands and influencers.',
+        'contributed to solo, a platform connecting 100+ brands and influencers.',
     highlights: [
-      'Created the Referral screen and Home Carousel with frontend card updates',
-      'Redesigned the KYC & Payouts sections, improving usability for 1,000+ users',
+      'created the referral screen and home carousel with frontend card updates',
+      'redesigned the kyc & payouts sections, improving usability for 1,000+ users',
     ],
   ),
 ];
 
 const kEducation = Education(
-  institution: 'Jaypee University of Information Technology',
-  degree: 'B.Tech in Computer Science Engineering',
-  period: 'May 2026',
-  detail: 'CGPA: 7.6',
+  institution: 'jaypee university of information technology',
+  degree: 'b.tech in computer science engineering',
+  period: 'may 2026',
+  detail: 'cgpa: 7.6',
 );
 
 const kSkills = [
-  'Flutter',
-  'Dart',
-  'Swift',
-  'Firebase',
-  'Provider',
-  'Bloc',
-  'Riverpod',
-  'MVVM',
-  'Feature First',
-  'Git/GitHub',
-  'Clickhouse',
-  'Figma',
-  'Claude Code',
-  'Xcode',
-  'Android Studio',
-  'Linux',
-  'Kotlin',
-  'Android Jetpack',
+  'flutter',
+  'dart',
+  'swift',
+  'firebase',
+  'provider',
+  'bloc',
+  'riverpod',
+  'mvvm',
+  'feature first',
+  'git/github',
+  'clickhouse',
+  'figma',
+  'claude code',
+  'xcode',
+  'android studio',
+  'linux',
+  'kotlin',
+  'android jetpack',
 ];
 
 const kEmail = 'kartikeyswork@gmail.com';
 const kPhone = '+91-6307195977';
+
+/// The photograph on the hero. Swap the file to change the picture.
+const kPortrait = 'assets/images/kartikey.jpg';
+
+/// The résumé, bundled with the site. Swap the file to update it.
+const kResume = 'assets/resume/kartikey_srivastava_resume.pdf';
+
+/// Where a browser can fetch that same file: a web build serves every bundled
+/// asset under its own `assets/` root, which is why the prefix appears twice.
+const kResumeUrl = 'assets/$kResume';
 const kGithub = 'https://github.com/kartikaeyy';
 const kLinkedin = 'https://linkedin.com/in/kartikaeyy';

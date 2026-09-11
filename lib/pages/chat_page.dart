@@ -20,13 +20,13 @@ class ChatPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             const Reveal(
-              child: Center(child: Eyebrow(label: 'Contact')),
+              child: Center(child: Eyebrow(label: 'contact')),
             ),
             SizedBox(height: isMobile ? Space.md : Space.md),
             Reveal(
               delay: const Duration(milliseconds: 60),
               child: SectionTitle(
-               "Let's build something",
+                "let's build something",
                 align: TextAlign.center,
                 minSize: 36,
                 maxSize: 66,
@@ -36,7 +36,7 @@ class ChatPage extends StatelessWidget {
             Reveal(
               delay: const Duration(milliseconds: 60),
               child: SectionTitle(
-               "COOL!",
+                "cool!",
                 align: TextAlign.center,
                 minSize: 36,
                 maxSize: 66,
@@ -47,7 +47,7 @@ class ChatPage extends StatelessWidget {
               delay: Duration(milliseconds: 180),
               child: _PrimaryContactActions(),
             ),
-            SizedBox(height: isMobile ? Space.xl : 64), 
+            SizedBox(height: isMobile ? Space.xl : 64),
           ],
         ),
       ),
@@ -66,7 +66,7 @@ class _PrimaryContactActions extends StatelessWidget {
       runSpacing: 14,
       children: [
         ActionButton(
-          label: 'Say hello',
+          label: 'say hello',
           icon: Icons.arrow_outward_rounded,
           onPressed: () => launchUrl(Uri.parse('mailto:$kEmail')),
           tooltip: kEmail,

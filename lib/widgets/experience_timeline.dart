@@ -20,9 +20,9 @@ class ExperienceTimeline extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Eyebrow(label: 'Where I have worked'),
+              Eyebrow(label: 'where i have worked'),
               SizedBox(height: Space.md),
-              SectionTitle('Experience', minSize: 34, maxSize: 56),
+              SectionTitle('experience', minSize: 34, maxSize: 56),
             ],
           ),
         ),
@@ -172,8 +172,8 @@ class _ExperienceCardState extends State<_ExperienceCard> {
                       ),
                       const SizedBox(height: 5),
                       Text(
-                        exp.company.toUpperCase(),
-                        style: AppType.mono(
+                        exp.company.toLowerCase(),
+                        style: AppType.label(
                           context,
                           size: 10.5,
                           weight: FontWeight.w600,
@@ -262,7 +262,7 @@ class _Monogram extends StatelessWidget {
       ),
       child: Center(
         child: Text(
-          label.characters.first.toUpperCase(),
+          label.characters.first.toLowerCase(),
           style: AppType.display(context, size: 20, color: pal.accent),
         ),
       ),
@@ -303,8 +303,8 @@ class PeriodPill extends StatelessWidget {
             const SizedBox(width: 7),
           ],
           Text(
-            text.toUpperCase(),
-            style: AppType.mono(
+            text.toLowerCase(),
+            style: AppType.label(
               context,
               size: 10,
               weight: FontWeight.w600,
