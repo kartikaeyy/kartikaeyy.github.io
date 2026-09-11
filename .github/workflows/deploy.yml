@@ -37,7 +37,22 @@ jobs:
         run: flutter pub get
 
       - name: Build web
-        run: flutter build web --release --base-href /portfolio/
+        run: |
+          # A user site (<owner>.github.io) is served from the domain root;
+          # every other repo is served from /<repo>/. Deriving the base href
+          # from the repository name means renaming the repo is all it takes
+          # to move the site — no workflow edit, and no chance of the href and
+          # the real path disagreeing, which serves a blank page.
+          repo="${GITHUB_REPOSITORY#*/}"
+          owner="${GITHUB_REPOSITORY%/*}"
+          if [ "$(echo "$repo" | tr '[:upper:]' '[:lower:]')" \
+             = "$(echo "$owner" | tr '[:upper:]' '[:lower:]').github.io" ]; then
+            base="/"
+          else
+            base="/$repo/"
+          fi
+          echo "Building with base href $base"
+          flutter build web --release --base-href "$base"
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
