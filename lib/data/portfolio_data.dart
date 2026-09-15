@@ -44,6 +44,14 @@ class Feature implements WorkItem {
   /// image opens a full-screen viewer.
   final List<String> showcase;
 
+  /// Optional link out — a repo, a store listing, a write-up. Shown as a small
+  /// action under the tech stack. Company work usually has none; a project of
+  /// your own usually does.
+  final String? link;
+
+  /// Label for that link, e.g. "see the repo".
+  final String linkLabel;
+
   final String accentColor;
 
   const Feature({
@@ -58,6 +66,8 @@ class Feature implements WorkItem {
     this.thumbnailImage,
     this.previewVideo,
     this.showcase = const [],
+    this.link,
+    this.linkLabel = 'see the repo',
     required this.accentColor,
   });
 }
@@ -315,6 +325,68 @@ const kFeatures = [
       'assets/videos/onboarding_junction_3.mp4',
     ],
     accentColor: '#2438E0',
+  ),
+  Feature(
+    id: 'omnia',
+    name: 'omnia',
+    context: 'acm-juit student chapter · android',
+    tagline: 'the app that holds a college coding community together',
+    shortDescription:
+        'the acm student chapter app — events, sessions, the council and a '
+        'profile for every member. the first thing i shipped end to end.',
+    description:
+        'omnia is the official app of the acm student chapter at juit, and the '
+        'first product i took from an idea to something people opened. the '
+        'chapter ran on whatsapp forwards and google forms: an event was '
+        'announced in a group and lost by the evening, the sessions we had '
+        'already run lived in a drive folder nobody could find, and a new '
+        'member had no way to see who ran the chapter or what it had done. '
+        'omnia gave all of it one place. i started it in january 2024 in figma '
+        'rather than in code — sat down with teammates, understood what the '
+        'chapter actually needed, and iterated on the flows before building '
+        'them. then flutter on top of firebase: auth for members, firestore '
+        'for events and council, storage for the photos, and registrations '
+        'that append straight into the chapter\'s google sheet. it is also '
+        'where i learnt flutter properly — not from a course, but from screens '
+        'the people around me were going to use. the repo is still live and '
+        'still being pushed to, most recently a move onto supabase.',
+    highlights: [
+      'login and signup on firebase auth, so a member has an identity in the '
+          'chapter rather than a number in a group',
+      'a home page of upcoming events, and past ones kept as an archive with '
+          'the full write-up and photos instead of a lost forward',
+      'the session archive month by month — web dev, fintech, ai & ml, '
+          'competitive programming, app development',
+      'a community page with the current council and past tenures: every '
+          'member, their role and what they ran',
+      'a profile each member owns — avatar, bio and their linkedin, github '
+          'and twitter, editable in the app',
+      'event registration that writes a row into the chapter\'s google sheet '
+          'and uploads the payment screenshot to firebase storage',
+    ],
+    techStack: [
+      'flutter',
+      'dart',
+      'firebase auth',
+      'firestore',
+      'firebase storage',
+      'google sheets',
+      'supabase',
+      'figma',
+    ],
+    // A walkthrough of the shipped android build, cut into four passes.
+    thumbnailImage: 'assets/images/omnia/poster.jpg',
+    previewVideo: 'assets/videos/omnia_1.mp4',
+    showcase: [
+      'assets/videos/omnia_1.mp4',
+      'assets/videos/omnia_2.mp4',
+      'assets/videos/omnia_3.mp4',
+      'assets/videos/omnia_4.mp4',
+    ],
+    link: 'https://github.com/kartikaeyy/Omnia',
+    linkLabel: 'see the repo',
+    // The app icon's own purple; the night edition lifts it into a violet.
+    accentColor: '#3B1E63',
   ),
 ];
 

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:url_launcher/url_launcher.dart';
+
 import '../data/portfolio_data.dart';
 import '../theme/app_theme.dart';
+import '../widgets/actions.dart';
 import '../widgets/media.dart';
 
 class FeatureDetailPage extends StatelessWidget {
@@ -493,6 +496,21 @@ class _TechSection extends StatelessWidget {
               )
               .toList(),
         ),
+        // Work of my own carries a way out to the source; company features
+        // have nowhere public to point at.
+        if (feature.link != null) ...[
+          const SizedBox(height: 28),
+          ActionButton(
+            label: feature.linkLabel,
+            icon: Icons.arrow_outward_rounded,
+            tone: ActionTone.ghost,
+            compact: true,
+            onPressed: () => launchUrl(
+              Uri.parse(feature.link!),
+              mode: LaunchMode.externalApplication,
+            ),
+          ),
+        ],
       ],
     );
   }
